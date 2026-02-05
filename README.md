@@ -1,6 +1,6 @@
 # 💎 Metronic - Tempemenjes Admin
 
-![Metronic Banner](https://repository-images.githubusercontent.com/181284534/267f8d00-9856-11e9-980b-193f0b2f1591)
+![Anime Banner](https://wallpapercave.com/wp/wp6034628.jpg)
 
 > **Enterprise-ready** admin dashboard built with Laravel and Metronic’s premium UI components.
 
@@ -19,7 +19,6 @@
 * **Advanced Dashboard:** Integrasi chart dan statistik real-time.
 * **Premium Components:** Menggunakan layout dan toolkit asli dari Metronic.
 * **Authentication:** Sistem login, registrasi, dan proteksi role.
-* **Optimized Performance:** Aset yang dikompilasi dengan Vite untuk loading cepat.
 
 ## 🚀 Quick Start
 

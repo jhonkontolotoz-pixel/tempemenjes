@@ -23,10 +23,21 @@
         @vite(['resources/js/app.js', "resources/js/Pages/{$page['component']}.vue"])
         @inertiaHead
     </head>
-    <body class="font-sans antialiased">
-        @inertia
+  <body 
+    id="kt_app_body" 
+    data-kt-app-layout="dark-sidebar" 
+    data-kt-app-header-fixed="true" 
+    data-kt-app-sidebar-enabled="true" 
+    data-kt-app-sidebar-fixed="true" 
+    data-kt-app-sidebar-hoverable="true" 
+    data-kt-app-sidebar-push-header="true" 
+    data-kt-app-sidebar-push-toolbar="true" 
+    data-kt-app-sidebar-push-footer="true" 
+    class="app-default"
+>
+    @inertia
 
-          <script src="{{asset('js/plugins.bundle.js')}}"></script>
-       <script src="{{asset('js/scripts.bundle.js')}}"></script>
-    </body>
+    <script src="{{asset('js/plugins.bundle.js')}}"></script>
+    <script src="{{asset('js/scripts.bundle.js')}}"></script>
+</body>
 </html>

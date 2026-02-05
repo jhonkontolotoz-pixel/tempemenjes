@@ -6,6 +6,7 @@ import InputLabel from '@/Components/InputLabel.vue'
 import PrimaryButton from '@/Components/PrimaryButton.vue'
 import TextInput from '@/Components/TextInput.vue'
 import { Head, Link, useForm } from '@inertiajs/vue3'
+import Swal from 'sweetalert2'
 
 defineProps({
     canResetPassword: Boolean,
@@ -19,10 +20,29 @@ const form = useForm({
 })
 
 const submit = () => {
-    form.post(route('login'), {
-        onFinish: () => form.reset('password'),
-    })
+  // Validasi custom email
+  if (!form.email) {
+    Swal.fire({ icon: 'error', title: 'Email wajib diisi!' })
+    return
+  }
+
+  if (!form.email.includes('@')) {
+    Swal.fire({ icon: 'error', title: 'Email harus valid, contoh: example@mail.com' })
+    return
+  }
+
+  // Validasi password
+  if (!form.password) {
+    Swal.fire({ icon: 'error', title: 'Password wajib diisi!' })
+    return
+  }
+
+  // Jika validasi lolos, kirim form
+  form.post(route('login'), {
+    onFinish: () => form.reset('password'),
+  })
 }
+
 </script>
 
 <template>
@@ -45,7 +65,7 @@ const submit = () => {
         </div>
 
         <!-- Form -->
-        <form @submit.prevent="submit" class="form w-100">
+        <form @submit.prevent="submit" class="form w-100" novalidate>
 
             <!-- Email -->
             <div class="fv-row mb-8">
@@ -110,7 +130,7 @@ const submit = () => {
                     :disabled="form.processing"
                 >
                     <span v-if="!form.processing">Log In</span>
-                    <span v-else>Processing...</span>
+                    <span v-else>Sabarrr...</span>
                 </PrimaryButton>
             </div>
 

@@ -1,12 +1,55 @@
 <script setup>
 import Sidebar from '@/Layouts/Sidebar.vue'
-import { onMounted } from 'vue'
+import { onMounted, watch } from 'vue'
+import { usePage } from '@inertiajs/vue3'
+import Swal from 'sweetalert2'
 
+const page = usePage()
+
+// =========================
+// METRONIC INIT
+// =========================
 onMounted(() => {
     if (window.KTMenu) {
-        KTMenu.createInstances()
+        window.KTMenu.createInstances()
     }
 })
+
+// =========================
+// TOAST CONFIG
+// =========================
+const Toast = Swal.mixin({
+    toast: true,
+    position: 'top-end',
+    showConfirmButton: false,
+    timer: 3000,
+    timerProgressBar: true,
+})
+
+// =========================
+// FLASH WATCHER (GLOBAL)
+// =========================
+watch(
+    () => page.props.flash,
+    (flash) => {
+        if (!flash) return
+
+        if (flash.success) {
+            Toast.fire({
+                icon: 'success',
+                title: flash.success,
+            })
+        }
+
+        if (flash.error) {
+            Toast.fire({
+                icon: 'error',
+                title: flash.error,
+            })
+        }
+    },
+    { immediate: true }
+)
 </script>
 
 <template>
@@ -19,7 +62,7 @@ onMounted(() => {
         <!-- WRAPPER -->
         <div class="app-wrapper flex-column flex-row-fluid" id="kt_app_wrapper">
 
-            <!-- HEADER (minimal dulu, biar layout ga rusak) -->
+            <!-- HEADER -->
             <div id="kt_app_header" class="app-header align-items-stretch">
                 <div class="app-container container-fluid d-flex align-items-stretch justify-content-between">
                     <div class="d-flex align-items-center">

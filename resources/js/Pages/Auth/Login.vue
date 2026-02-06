@@ -20,7 +20,7 @@ const form = useForm({
 })
 
 const submit = () => {
-  // Validasi custom email
+  // Validasi frontend
   if (!form.email) {
     Swal.fire({ icon: 'error', title: 'Email wajib diisi!' })
     return
@@ -31,19 +31,25 @@ const submit = () => {
     return
   }
 
-  // Validasi password
   if (!form.password) {
     Swal.fire({ icon: 'error', title: 'Password wajib diisi!' })
     return
   }
 
-  // Jika validasi lolos, kirim form
+  // Kirim form ke backend
   form.post(route('login'), {
     onFinish: () => form.reset('password'),
+    onError: () => {
+      Swal.fire({
+        icon: 'error',
+        title: 'Login gagal!',
+        text: 'Salah input kali, Bro/Sist. Kagak ada di daftar nih',
+      })
+    }
   })
-}
-
+} 
 </script>
+
 
 <template>
     <GuestLayout>
@@ -81,7 +87,6 @@ const submit = () => {
                     autocomplete="username"
                 />
 
-                <InputError class="mt-2" :message="form.errors.email" />
             </div>
 
             <!-- Password -->
@@ -97,7 +102,6 @@ const submit = () => {
                     autocomplete="current-password"
                 />
 
-                <InputError class="mt-2" :message="form.errors.password" />
             </div>
 
             <!-- Remember + Forgot -->

@@ -82,7 +82,7 @@ const submit = () => {
 
       <!-- Name -->
       <div class="fv-row mb-8">
-        <InputLabel for="name" value="Full Name" class="form-label" />
+        <InputLabel for="name" value="Nama Lengkap" class="form-label" />
         <TextInput
           id="name"
           type="text"
@@ -139,7 +139,7 @@ const submit = () => {
 
       <!-- Actions -->
       <div class="d-flex flex-stack mb-8">
-        <Link :href="route('login')" class="link-primary fw-semibold">Already registered?</Link>
+        <Link :href="route('login')" class="link-primary fw-semibold">Sudah Punya Akun?</Link>
       </div>
 
       <!-- Submit -->
@@ -151,7 +151,7 @@ const submit = () => {
         >
           <span v-if="!form.processing">Register</span>
           <span v-else>
-            Please wait...
+            Harap Sabarrrr...
             <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
           </span>
         </PrimaryButton>

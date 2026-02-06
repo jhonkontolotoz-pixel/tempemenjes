@@ -8,15 +8,12 @@
         <link rel="icon" type="image/ico" href="{{asset('favicon.ico')}}">
 
         <title inertia>{{ config('app.name', 'Laravel') }}</title>
-
-         <!-- Fonts -->
-        <link rel="preconnect" href="https://fonts.googleapis.com">
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
+        <!--begin::Fonts(mandatory for all pages)-->
+		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,400,500,600,700" />
+		<!--end::Fonts-->
         <!-- css -->
-        <link rel="stylesheet" href="{{asset('css/style.bundle.css')}}">
-        <link rel="stylesheet" href="{{asset('css/plugins.bundle.css')}}">
+      <link href="{{ asset('plugins/global/plugins.bundle.css') }}" rel="stylesheet">
+      <link href="{{ asset('css/style.bundle.css') }}" rel="stylesheet">
 
         <!-- Scripts -->
         @routes
@@ -36,8 +33,7 @@
     class="app-default"
 >
     @inertia
-
-    <script src="{{asset('js/plugins.bundle.js')}}"></script>
-    <script src="{{asset('js/scripts.bundle.js')}}"></script>
+<script src="{{ asset('js/plugins.bundle.js') }}"></script>
+<script src="{{ asset('js/scripts.bundle.js') }}"></script>
 </body>
 </html>

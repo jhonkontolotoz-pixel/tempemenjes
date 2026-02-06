@@ -1,6 +1,47 @@
 <script setup>
 import { Link } from '@inertiajs/vue3'
 import ApplicationLogo from '@/Components/ApplicationLogo.vue'
+import { watch } from 'vue'
+import { usePage } from '@inertiajs/vue3'
+import Swal from 'sweetalert2'
+
+const page = usePage()
+
+// =========================
+// TOAST CONFIG
+// =========================
+const Toast = Swal.mixin({
+    toast: true,
+    position: 'top-end',
+    showConfirmButton: false,
+    timer: 3000,
+    timerProgressBar: true,
+})
+
+// =========================
+// FLASH WATCHER (GLOBAL)
+// =========================
+watch(
+    () => page.props.flash,
+    (flash) => {
+        if (!flash) return
+
+        if (flash.success) {
+            Toast.fire({
+                icon: 'success',
+                title: flash.success,
+            })
+        }
+
+        if (flash.error) {
+            Toast.fire({
+                icon: 'error',
+                title: flash.error,
+            })
+        }
+    },
+    { immediate: true }
+)
 </script>
 
 <template>

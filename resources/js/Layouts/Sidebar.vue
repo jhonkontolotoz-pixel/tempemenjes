@@ -6,56 +6,73 @@ import Swal from 'sweetalert2'
 const page = usePage()
 const user = computed(() => page.props.auth?.user)
 
-// =========================
-// ACTIVE ROUTE DETECTION
-// =========================
 const currentUrl = computed(() => page.url)
 
-const isActive = (path) => {
-    return currentUrl.value === path || currentUrl.value.startsWith(path + '/')
-}
+// =========================
+// ROUTE HELPERS
+// =========================
+const isActive = (path) =>
+    currentUrl.value === path || currentUrl.value.startsWith(path + '/')
+
+const isRouteGroup = (paths) =>
+    paths.some(path => currentUrl.value.startsWith(path))
 
 // =========================
 // NOTIFICATIONS
 // =========================
 const notifications = {
-    tasks: 6,
-    activities: 24,
-    projects: 3
+    tasks: 5,
+    activities: 99,
 }
 
 // =========================
-// GROUP ACTIVE STATE
+// GROUP STATES
 // =========================
-const isDashboardGroupActive = computed(() => {
-    const url = currentUrl.value
-    return url.startsWith('/dashboard') || url === '/social'
-})
+const isDashboardGroupActive = computed(() =>
+    isRouteGroup([
+        '/dashboard/bloghome',
+        '/dashboard/school'
+    ])
+)
 
-const isAppsGroupActive = computed(() => {
-    const url = currentUrl.value
-    return (
-        url.startsWith('/apps/pos') ||
-        url.startsWith('/apps/management-user') ||
-        url.startsWith('/apps/customer') ||
-        url.startsWith('/apps/product') ||
-        url.startsWith('/apps/financeperform')
-    )
-})
+const isAppsGroupActive = computed(() =>
+    isRouteGroup([
+        '/apps/pos',
+        '/apps/user-list',
+        '/apps/customer',
+        '/apps/product',
+        '/apps/financeperformances',
+        '/apps/roles-permission',
+        '/apps/invoice-view',
+        '/apps/invoice-create'
+    ])
+)
 
-const isPagesGroupActive = computed(() => {
-    const url = currentUrl.value
-    return (
-        url.startsWith('/account') ||
-        url.startsWith('/settings') ||
-        url.startsWith('/profile') ||
-        url.startsWith('/users')
-    )
-})
+const isReportsGroupActive = computed(() =>
+    isRouteGroup([
+        '/productviewed',
+        '/sales',
+        '/customer-orders',
+        '/shipping'
+    ])
+)
 
-const isHelpGroupActive = computed(() => currentUrl.value.startsWith('/help'))
+const isPagesGroupActive = computed(() =>
+    isRouteGroup([
+        '/account-overview',
+        '/profile',
+        '/contact',
+        '/calendar'
+    ])
+)
 
-const isProjectGroupActive = computed(() => currentUrl.value.startsWith('/project'))
+const isHelpGroupActive = computed(() =>
+    isRouteGroup(['/help'])
+)
+
+const isProjectGroupActive = computed(() =>
+    isRouteGroup(['/project'])
+)
 
 // =========================
 // LOGOUT
@@ -83,260 +100,366 @@ const reinitMenu = () => {
     }
 }
 
-onMounted(() => {
-    reinitMenu()
-})
+onMounted(reinitMenu)
 
 watch(() => page.url, () => {
-    setTimeout(() => {
-        reinitMenu()
-    }, 50)
+    setTimeout(reinitMenu, 50)
 })
 </script>
 
 <template>
-<div id="kt_app_sidebar" class="app-sidebar flex-column bg-dark"
-     data-kt-drawer="true" data-kt-drawer-name="app-sidebar"
+<div id="kt_app_sidebar"
+     class="app-sidebar flex-column sidebar-dark"
+     data-kt-drawer="true"
+     data-kt-drawer-name="app-sidebar"
      data-kt-drawer-activate="{default: true, lg: false}"
-     data-kt-drawer-overlay="true" data-kt-drawer-width="250px"
-     data-kt-drawer-direction="start" data-kt-drawer-toggle="#kt_app_sidebar_mobile_toggle">
+     data-kt-drawer-overlay="true"
+     data-kt-drawer-width="250px"
+     data-kt-drawer-direction="start"
+     data-kt-drawer-toggle="#kt_app_sidebar_mobile_toggle">
 
     <!-- LOGO -->
     <div class="app-sidebar-logo px-6 py-9">
         <Link href="/">
-            <img src="/media/logos/custom-1.png" alt="Logo" class="h-50px app-sidebar-logo-default" />
+            <img src="/media/logos/custom-1.png"
+                 class="h-50px"
+                 alt="Logo" />
         </Link>
     </div>
 
     <!-- MENU -->
     <div class="app-sidebar-menu overflow-hidden flex-column-fluid">
-        <div id="kt_app_sidebar_menu_wrapper" class="app-sidebar-wrapper hover-scroll-overlay-y my-5 mx-3"
-             data-kt-scroll="true" data-kt-scroll-height="auto"
-             data-kt-scroll-dependencies="#kt_app_sidebar_logo, #kt_app_sidebar_footer"
-             data-kt-scroll-wrappers="#kt_app_sidebar_menu" data-kt-scroll-offset="5px">
+        <div class="app-sidebar-wrapper hover-scroll-overlay-y my-5 mx-3"
+             data-kt-scroll="true">
 
-            <div class="menu menu-column menu-rounded menu-sub-indention fw-semibold fs-6" id="#kt_app_sidebar_menu" data-kt-menu="true">
+            <div class="menu menu-column menu-rounded menu-sub-indention fw-semibold fs-6"
+                 data-kt-menu="true">
 
                 <!-- TASKS -->
                 <div class="menu-item">
-                    <Link href="/tasks" class="menu-link" :class="{ active: isActive('/tasks') }">
+                    <Link href="/tasks"
+                          class="menu-link"
+                          :class="{ active: isActive('/tasks') }">
                         <span class="menu-icon"><i class="ki-outline ki-element-11 fs-2"></i></span>
-                        <span class="menu-title text-gray-100">Tasks</span>
-                        <span class="badge badge-primary badge-sm">{{ notifications.tasks }}</span>
+                        <span class="menu-title">Tasks</span>
+                        <span class="badge badge-primary badge-sm">
+                            {{ notifications.tasks }}
+                        </span>
                     </Link>
                 </div>
 
                 <!-- ACTIVITIES -->
                 <div class="menu-item">
-                    <Link href="/activities" class="menu-link" :class="{ active: isActive('/activities') }">
+                    <Link href="/activities"
+                          class="menu-link"
+                          :class="{ active: isActive('/activities') }">
                         <span class="menu-icon"><i class="ki-outline ki-calendar fs-2"></i></span>
-                        <span class="menu-title text-gray-100">Activities</span>
-                        <span class="badge badge-danger badge-sm">{{ notifications.activities }}</span>
+                        <span class="menu-title">Activities</span>
+                        <span class="badge badge-danger badge-sm">
+                            {{ notifications.activities }}
+                        </span>
                     </Link>
                 </div>
 
                 <!-- DASHBOARD -->
-                <div class="menu-item menu-accordion" data-kt-menu-trigger="click" :class="{ show: isDashboardGroupActive }">
+                <div class="menu-item menu-accordion"
+                     data-kt-menu-trigger="click"
+                     :class="{ show: isDashboardGroupActive }">
+
                     <span class="menu-link">
                         <span class="menu-icon"><i class="ki-outline ki-home-2 fs-2"></i></span>
-                        <span class="menu-title text-gray-100">Dashboard</span>
+                        <span class="menu-title">Dashboard</span>
                         <span class="menu-arrow"></span>
                     </span>
-                    <div class="menu-sub menu-sub-accordion" :class="{ show: isDashboardGroupActive }">
+
+                    <div class="menu-sub menu-sub-accordion"
+                         :class="{ show: isDashboardGroupActive }">
+
                         <div class="menu-item">
-                            <Link href="/" class="menu-link" :class="{ active: currentUrl.value === '/' }">
+                            <Link href="/"
+                                  class="menu-link"
+                                  :class="{ active: isActive('/') }">
                                 <span class="menu-bullet"><span class="bullet bullet-dot"></span></span>
                                 <span class="menu-title">Default</span>
                             </Link>
                         </div>
 
                         <div class="menu-item">
-                            <Link href="/dashboard/social" class="menu-link" :class="{ active: isActive('/dashboard/marketing') }">
+                            <Link href="/dashboard/blog"
+                                  class="menu-link"
+                                  :class="{ active: isActive('/dashboard/bloghome') }">
                                 <span class="menu-bullet"><span class="bullet bullet-dot"></span></span>
-                                <span class="menu-title">Social</span>
+                                <span class="menu-title">Blog Home</span>
                             </Link>
                         </div>
+
                         <div class="menu-item">
-                            <Link href="/dashboard/school" class="menu-link" :class="{ active: isActive('/dashboard/school') }">
+                            <Link href="/dashboard/school"
+                                  class="menu-link"
+                                  :class="{ active: isActive('/dashboard/school') }">
                                 <span class="menu-bullet"><span class="bullet bullet-dot"></span></span>
                                 <span class="menu-title">School</span>
                             </Link>
                         </div>
+
                     </div>
                 </div>
 
                 <!-- APPS -->
-                <div class="menu-item menu-accordion mt-5" data-kt-menu-trigger="click" :class="{ show: isAppsGroupActive }">
+                <div class="menu-item menu-accordion mt-5"
+                     data-kt-menu-trigger="click"
+                     :class="{ show: isAppsGroupActive }">
+
                     <span class="menu-link">
                         <span class="menu-icon"><i class="ki-outline ki-abstract-45 fs-2"></i></span>
-                        <span class="menu-title text-gray-100">Apps</span>
+                        <span class="menu-title">Apps</span>
                         <span class="menu-arrow"></span>
                     </span>
-                    <div class="menu-sub menu-sub-accordion" :class="{ show: isAppsGroupActive }">
-                        <div class="menu-item">
-                            <Link href="/apps/pos" class="menu-link" :class="{ active: isActive('/apps/pos') }">
+
+                    <div class="menu-sub menu-sub-accordion"
+                         :class="{ show: isAppsGroupActive }">
+
+                        <div class="menu-item"
+                             v-for="item in [
+                                {name:'POS System', path:'/apps/pos'},
+                                {name:'User List', path:'/apps/user-list'},
+                                {name:'Customer', path:'/apps/customer'},
+                                {name:'Product', path:'/apps/product'},
+                                {name:'Finance Performances', path:'/apps/financeperformances'},
+                                {name:'Roles Permissions', path:'/apps/roles-permission'},
+                                {name:'Invoice Manager', path:'/apps/invoice-view'},
+                                {name:'Invoice Create', path:'/apps/invoice-create'}
+                             ]"
+                             :key="item.path">
+
+                            <Link :href="item.path"
+                                  class="menu-link"
+                                  :class="{ active: isActive(item.path) }">
                                 <span class="menu-bullet"><span class="bullet bullet-dot"></span></span>
-                                <span class="menu-title">POS System</span>
+                                <span class="menu-title">{{ item.name }}</span>
                             </Link>
                         </div>
-                        <div class="menu-item">
-                            <Link href="/apps/management-user" class="menu-link" :class="{ active: isActive('/apps/management-user') }">
+
+                    </div>
+                </div>
+
+                <!-- REPORTS -->
+                <div class="menu-item menu-accordion mt-5"
+                     data-kt-menu-trigger="click"
+                     :class="{ show: isReportsGroupActive }">
+
+                    <span class="menu-link">
+                        <span class="menu-icon"><i class="ki-outline ki-chart fs-2"></i></span>
+                        <span class="menu-title">Reports</span>
+                        <span class="menu-arrow"></span>
+                    </span>
+
+                    <div class="menu-sub menu-sub-accordion"
+                         :class="{ show: isReportsGroupActive }">
+
+                        <div class="menu-item"
+                             v-for="item in [
+                                {name:'Product Viewed', path:'/productviewed'},
+                                {name:'Sales', path:'/sales'},
+                                {name:'Customer Orders', path:'/customer-orders'},
+                                {name:'Shipping', path:'/shipping'}
+                             ]"
+                             :key="item.path">
+
+                            <Link :href="item.path"
+                                  class="menu-link"
+                                  :class="{ active: isActive(item.path) }">
                                 <span class="menu-bullet"><span class="bullet bullet-dot"></span></span>
-                                <span class="menu-title">Management User</span>
+                                <span class="menu-title">{{ item.name }}</span>
                             </Link>
                         </div>
-                        <div class="menu-item">
-                            <Link href="/apps/customer" class="menu-link" :class="{ active: isActive('/apps/customer') }">
-                                <span class="menu-bullet"><span class="bullet bullet-dot"></span></span>
-                                <span class="menu-title">Customer</span>
-                            </Link>
-                        </div>
-                        <div class="menu-item">
-                            <Link href="/apps/product" class="menu-link" :class="{ active: isActive('/apps/product') }">
-                                <span class="menu-bullet"><span class="bullet bullet-dot"></span></span>
-                                <span class="menu-title">Product</span>
-                            </Link>
-                        </div>
-                          <div class="menu-item">
-                            <Link href="/apps/financeperform" class="menu-link" :class="{ active: isActive('/apps/product') }">
-                                <span class="menu-bullet"><span class="bullet bullet-dot"></span></span>
-                                <span class="menu-title">Finance Perfomances</span>
-                            </Link>
-                        </div>
-                        <div class="menu-item">
-                            <Link href="/apps/invoice" class="menu-link" :class="{ active: isActive('/apps/pos') }">
-                                <span class="menu-bullet"><span class="bullet bullet-dot"></span></span>
-                                <span class="menu-title">Invoice Manager</span>
-                            </Link>
-                        </div>
+
                     </div>
                 </div>
 
                 <!-- PAGES -->
-                <div class="menu-item menu-accordion mt-5" data-kt-menu-trigger="click" :class="{ show: isPagesGroupActive }">
+                <div class="menu-item menu-accordion mt-5"
+                     data-kt-menu-trigger="click"
+                     :class="{ show: isPagesGroupActive }">
+
                     <span class="menu-link">
                         <span class="menu-icon"><i class="ki-outline ki-abstract-26 fs-2"></i></span>
-                        <span class="menu-title text-gray-100">Pages</span>
+                        <span class="menu-title">Pages</span>
                         <span class="menu-arrow"></span>
                     </span>
-                    <div class="menu-sub menu-sub-accordion" :class="{ show: isPagesGroupActive }">
-                        <div class="menu-item">
-                            <Link href="/account" class="menu-link" :class="{ active: isActive('/account') }">
+
+                    <div class="menu-sub menu-sub-accordion"
+                         :class="{ show: isPagesGroupActive }">
+
+                        <div class="menu-item"
+                             v-for="item in [
+                                {name:'Account', path:'/account-overview'},
+                                {name:'Profile', path:'/profile'},
+                                {name:'Contact', path:'/contact'},
+                                {name:'Calendar', path:'/calendar'}
+                             ]"
+                             :key="item.path">
+
+                            <Link :href="item.path"
+                                  class="menu-link"
+                                  :class="{ active: isActive(item.path) }">
                                 <span class="menu-bullet"><span class="bullet bullet-dot"></span></span>
-                                <span class="menu-title">Account</span>
+                                <span class="menu-title">{{ item.name }}</span>
                             </Link>
                         </div>
-                        <div class="menu-item">
-                            <Link href="/profile" class="menu-link" :class="{ active: isActive('/profile') }">
-                                <span class="menu-bullet"><span class="bullet bullet-dot"></span></span>
-                                <span class="menu-title">Profile</span>
-                            </Link>
-                        </div>
-                        <div class="menu-item">
-                            <Link href="/users" class="menu-link" :class="{ active: isActive('/users') }">
-                                <span class="menu-bullet"><span class="bullet bullet-dot"></span></span>
-                                <span class="menu-title">Contact</span>
-                            </Link>
-                        </div>
-                        <div class="menu-item">
-                            <Link href="/apps/management-user/roles" class="menu-link" :class="{ active: isActive('/apps/management-user/roles') }">
-                                <span class="menu-bullet"><span class="bullet bullet-dot"></span></span>
-                                <span class="menu-title">Roles Permissions</span>
-                            </Link>
-                        </div>
-                        <div class="menu-item">
-                            <Link href="/apps/management-user/permissions" class="menu-link" :class="{ active: isActive('/apps/management-user/permissions') }">
-                                <span class="menu-bullet"><span class="bullet bullet-dot"></span></span>
-                                <span class="menu-title">Calendar</span>
-                            </Link>
-                        </div>
+
                     </div>
                 </div>
 
                 <!-- HELP -->
-                <div class="menu-item menu-accordion mt-5" data-kt-menu-trigger="click" :class="{ show: isHelpGroupActive }">
+                <div class="menu-item menu-accordion mt-5"
+                     data-kt-menu-trigger="click"
+                     :class="{ show: isHelpGroupActive }">
+
                     <span class="menu-link">
                         <span class="menu-icon"><i class="ki-outline ki-information fs-2"></i></span>
-                        <span class="menu-title text-gray-100">Help</span>
+                        <span class="menu-title">Help</span>
                         <span class="menu-arrow"></span>
                     </span>
-                    <div class="menu-sub menu-sub-accordion" :class="{ show: isHelpGroupActive }">
+
+                    <div class="menu-sub menu-sub-accordion"
+                         :class="{ show: isHelpGroupActive }">
+
                         <div class="menu-item">
-                            <Link href="/help/component" class="menu-link" :class="{ active: isActive('/help/component') }">
+                            <Link href="/help/component"
+                                  class="menu-link"
+                                  :class="{ active: isActive('/help/component') }">
                                 <span class="menu-bullet"><span class="bullet bullet-dot"></span></span>
                                 <span class="menu-title">Component</span>
                             </Link>
                         </div>
+
                         <div class="menu-item">
-                            <Link href="/help/document" class="menu-link" :class="{ active: isActive('/help/document') }">
+                            <Link href="/help/document"
+                                  class="menu-link"
+                                  :class="{ active: isActive('/help/document') }">
                                 <span class="menu-bullet"><span class="bullet bullet-dot"></span></span>
                                 <span class="menu-title">Document</span>
                             </Link>
                         </div>
+
                     </div>
                 </div>
 
                 <!-- PROJECT -->
-                <div class="menu-item menu-accordion mt-5" data-kt-menu-trigger="click" :class="{ show: isProjectGroupActive }">
+                <div class="menu-item menu-accordion mt-5"
+                     data-kt-menu-trigger="click"
+                     :class="{ show: isProjectGroupActive }">
+
                     <span class="menu-link">
                         <span class="menu-icon"><i class="ki-outline ki-folder fs-2"></i></span>
-                        <span class="menu-title text-gray-100">Project</span>
+                        <span class="menu-title">Project</span>
                         <span class="menu-arrow"></span>
                     </span>
-                    <div class="menu-sub menu-sub-accordion" :class="{ show: isProjectGroupActive }">
-    
-    <div class="menu-item">
-        <a href="https://github.com/jhonkontolotoz-pixel/kasir-ulfah"
-           class="menu-link"
-           target="_blank"
-           rel="noopener">
-            <span class="menu-bullet">
-                <span class="bullet bullet-dot"></span>
-            </span>
-            <span class="menu-title">1. POS Sistem</span>
-        </a>
-    </div>
 
-    <div class="menu-item">
-        <a href="https://github.com/jhonkontolotoz-pixel/dashboard-management"
-           class="menu-link"
-           target="_blank"
-           rel="noopener">
-            <span class="menu-bullet">
-                <span class="bullet bullet-dot"></span>
-            </span>
-            <span class="menu-title">2. Login Register SPA API Only</span>
-        </a>
-    </div>
+                    <div class="menu-sub menu-sub-accordion">
+                        <div class="menu-item">
+                            <a href="https://github.com/jhonkontolotoz-pixel/kasir-ulfah"
+                               class="menu-link"
+                               target="_blank">
+                                <span class="menu-bullet"><span class="bullet bullet-dot"></span></span>
+                                <span class="menu-title">1. KASIR SPA</span>
+                            </a>
+                        </div>
 
-</div>
-
+                        <div class="menu-item">
+                            <a href="https://github.com/jhonkontolotoz-pixel/dashboard-management"
+                               class="menu-link"
+                               target="_blank">
+                                <span class="menu-bullet"><span class="bullet bullet-dot"></span></span>
+                                <span class="menu-title">2. Login Register SPA</span>
+                            </a>
+                        </div>
+                    </div>
                 </div>
 
             </div>
         </div>
     </div>
 
-    <!-- USER FOOTER -->
+    <!-- FOOTER USER -->
     <div class="app-sidebar-footer d-flex align-items-center px-8 pb-10">
-        <div class="d-flex flex-stack flex-row-fluid">
-            <div class="d-flex align-items-center cursor-pointer" 
-                 data-kt-menu-trigger="{default: 'click'}" 
-                 data-kt-menu-attach="body" 
-                 data-kt-menu-placement="top-start">
-                <div class="symbol symbol-circle symbol-35px me-3">
-                    <img src="/media/avatars/300-14.jpg" alt="user" />
-                </div>
-                <div class="d-flex flex-column">
-                    <span class="text-white fw-bold fs-7 lh-1">{{ user?.name || 'Alice' }}</span>
-                    <span class="text-gray-500 fw-semibold fs-8 lh-1 mt-1">Welcome</span>
-                </div>
+        <div class="d-flex align-items-center flex-row-fluid">
+            <div class="symbol symbol-circle symbol-35px me-3">
+                <img src="/media/avatars/300-14.jpg" alt="user" />
             </div>
-
-            <button @click="handleLogout" class="btn btn-icon btn-sm btn-custom btn-danger w-30px h-30px">
-                <i class="ki-outline ki-exit-right fs-2"></i>
-            </button>
+            <div class="d-flex flex-column">
+                <span class="text-white fw-bold fs-7">
+                    {{ user?.name || 'User' }}
+                </span>
+                <span class="text-gray-400 fs-8">Welcome</span>
+            </div>
         </div>
+
+        <button @click="handleLogout"
+                class="btn btn-icon btn-sm btn-danger w-30px h-30px">
+            <i class="ki-outline ki-exit-right fs-2"></i>
+        </button>
     </div>
+
 </div>
 </template>
+
+<style scoped>
+/* Sidebar SELALU DARK - tidak peduli light/dark mode */
+.sidebar-dark {
+    background-color: #1e1e2d !important;
+}
+
+/* Text di sidebar selalu putih/terang */
+.sidebar-dark .menu-link {
+    color: #92929f;
+}
+
+.sidebar-dark .menu-link:hover {
+    background-color: #1b1b28;
+    color: #ffffff;
+}
+
+.sidebar-dark .menu-link.active {
+    background-color: #1b1b28;
+    color: #3699ff;
+}
+
+.sidebar-dark .menu-title {
+    color: #92929f;
+}
+
+.sidebar-dark .menu-link:hover .menu-title {
+    color: #ffffff;
+}
+
+.sidebar-dark .menu-link.active .menu-title {
+    color: #3699ff;
+}
+
+.sidebar-dark .menu-icon i {
+    color: #494b74;
+}
+
+.sidebar-dark .menu-link:hover .menu-icon i {
+    color: #ffffff;
+}
+
+.sidebar-dark .menu-link.active .menu-icon i {
+    color: #3699ff;
+}
+
+.sidebar-dark .menu-arrow {
+    color: #494b74;
+}
+
+/* Scrollbar dark */
+.sidebar-dark .hover-scroll-overlay-y::-webkit-scrollbar-thumb {
+    background-color: #2b2b40;
+}
+
+.sidebar-dark .hover-scroll-overlay-y::-webkit-scrollbar-track {
+    background-color: #1e1e2d;
+}
+</style>

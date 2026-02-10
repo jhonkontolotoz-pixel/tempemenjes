@@ -12,9 +12,32 @@ const { isDark, toggleTheme } = useTheme()
 // RESET BODY STATE (ANTI SCROLL LOCK)
 // =========================
 const resetBodyState = () => {
+    // Remove modal & drawer classes
     document.body.classList.remove('modal-open')
     document.body.classList.remove('drawer-open')
-    document.body.style.overflow = 'auto'
+    document.body.classList.remove('overflow-hidden')
+    
+    // Remove SweetAlert2 classes
+    document.body.classList.remove('swal2-shown', 'swal2-height-auto')
+    
+    // Reset overflow di body & html
+    document.body.style.overflow = ''
+    document.body.style.position = ''
+    document.body.style.width = ''
+    document.body.style.paddingRight = ''
+    document.documentElement.style.overflow = ''
+    
+    // Remove modal backdrop jika ada
+    const modalBackdrop = document.querySelector('.modal-backdrop')
+    if (modalBackdrop) {
+        modalBackdrop.remove()
+    }
+    
+    // Remove swal2 container jika ada yang tertinggal
+    const swalContainer = document.querySelector('.swal2-container')
+    if (swalContainer && !swalContainer.classList.contains('swal2-shown')) {
+        swalContainer.remove()
+    }
 }
 
 // Jalankan saat pertama mount
@@ -22,19 +45,65 @@ onMounted(() => {
     resetBodyState()
 })
 
-// Jalankan setiap selesai navigasi Inertia
-router.on('finish', () => {
-    resetBodyState()
-})
-
-
 // =========================
-// LOGOUT HANDLER
+// LOGOUT HANDLER - DIPERBAIKI
 // =========================
 const handleLogout = () => {
-    router.post(route('logout'))
+    // ✅ Tampilkan konfirmasi logout
+    Swal.fire({
+        title: 'Yakin mau logout?',
+        text: 'Kamu akan keluar dari sistem',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Ya, Logout!',
+        cancelButtonText: 'Batal',
+        didClose: () => {
+            resetBodyState()
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // ✅ PERBAIKAN: Gunakan router.post dengan proper config
+            router.post(route('logout'), {}, {
+                preserveScroll: false,
+                preserveState: false,
+                onBefore: () => {
+                    // Disable semua button sementara
+                    document.body.style.pointerEvents = 'none'
+                },
+                onSuccess: () => {
+                    // Tampilkan toast logout berhasil
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Logout Berhasil!',
+                        text: 'Sampai jumpa lagi 👋',
+                        timer: 1500,
+                        showConfirmButton: false,
+                        didClose: () => {
+                            resetBodyState()
+                            document.body.style.pointerEvents = ''
+                        }
+                    })
+                },
+                onError: () => {
+                    document.body.style.pointerEvents = ''
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Logout Gagal!',
+                        text: 'Terjadi kesalahan, coba lagi',
+                        timer: 2000,
+                        showConfirmButton: false
+                    })
+                },
+                onFinish: () => {
+                    resetBodyState()
+                    document.body.style.pointerEvents = ''
+                }
+            })
+        }
+    })
 }
-
 
 // =========================
 // TOAST CONFIG
@@ -45,29 +114,34 @@ const Toast = Swal.mixin({
     showConfirmButton: false,
     timer: 3000,
     timerProgressBar: true,
+    didClose: () => {
+        resetBodyState()
+    }
 })
 
-
 // =========================
-// FLASH WATCHER
+// FLASH WATCHER - DIPERBAIKI
 // =========================
 router.on('success', (event) => {
     const flash = event.detail.page.props.flash
     if (!flash) return
 
-    if (flash.success) {
-        Toast.fire({
-            icon: 'success',
-            title: flash.success,
-        })
-    }
+    // ✅ Delay sedikit biar tidak konflik dengan navigasi
+    setTimeout(() => {
+        if (flash.success) {
+            Toast.fire({
+                icon: 'success',
+                title: flash.success,
+            })
+        }
 
-    if (flash.error) {
-        Toast.fire({
-            icon: 'error',
-            title: flash.error,
-        })
-    }
+        if (flash.error) {
+            Toast.fire({
+                icon: 'error',
+                title: flash.error,
+            })
+        }
+    }, 200)
 })
 </script>
 

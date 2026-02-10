@@ -22,34 +22,69 @@ const form = useForm({
 const submit = () => {
   // Validasi frontend
   if (!form.email) {
-    Swal.fire({ icon: 'error', title: 'Email wajib diisi!' })
+    Swal.fire({ 
+      icon: 'error', 
+      title: 'Email wajib diisi!',
+      timer: 2000,
+      showConfirmButton: false
+    })
     return
   }
 
   if (!form.email.includes('@')) {
-    Swal.fire({ icon: 'error', title: 'Email harus valid, contoh: example@mail.com' })
+    Swal.fire({ 
+      icon: 'error', 
+      title: 'Email harus valid, contoh: example@mail.com',
+      timer: 2000,
+      showConfirmButton: false
+    })
     return
   }
 
   if (!form.password) {
-    Swal.fire({ icon: 'error', title: 'Password wajib diisi!' })
+    Swal.fire({ 
+      icon: 'error', 
+      title: 'Password wajib diisi!',
+      timer: 2000,
+      showConfirmButton: false
+    })
     return
   }
 
   // Kirim form ke backend
   form.post(route('login'), {
-    onFinish: () => form.reset('password'),
+    onFinish: () => {
+      form.reset('password')
+    },
+    onSuccess: () => {
+      // ✅ TAMPILKAN SWEETALERT LOGIN BERHASIL
+      Swal.fire({
+        icon: 'success',
+        title: 'Login Berhasil!',
+        text: 'Selamat datang kembali 🎉',
+        timer: 1500,
+        showConfirmButton: false,
+        didClose: () => {
+          // Reset body state setelah swal tutup
+          document.body.style.overflow = ''
+          document.body.style.position = ''
+          document.body.style.width = ''
+          document.body.classList.remove('swal2-shown', 'swal2-height-auto')
+        }
+      })
+    },
     onError: () => {
       Swal.fire({
         icon: 'error',
         title: 'Login gagal!',
         text: 'Salah input kali, Bro/Sist. Kagak ada di daftar nih',
+        timer: 2000,
+        showConfirmButton: false
       })
     }
   })
 } 
 </script>
-
 
 <template>
     <GuestLayout>

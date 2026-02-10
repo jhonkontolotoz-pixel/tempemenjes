@@ -16,6 +16,13 @@ const Toast = Swal.mixin({
     showConfirmButton: false,
     timer: 3000,
     timerProgressBar: true,
+    didClose: () => {
+        // ⭐ Reset body state setelah toast tutup
+        document.body.style.overflow = ''
+        document.body.style.position = ''
+        document.body.style.width = ''
+        document.body.classList.remove('swal2-shown', 'swal2-height-auto')
+    }
 })
 
 // =========================
@@ -92,7 +99,7 @@ watch(
     inset: 0 !important;
     width: 100vw !important;
     height: 100vh !important;
-    overflow: hidden !important; /* Matikan scroll browser */
+    overflow: hidden !important; /* Hanya untuk wrapper ini */
     z-index: 999;
 }
 
@@ -113,10 +120,10 @@ watch(
     width: 0px;
 }
 
-/* CSS Global untuk memastikan body tidak bergerak */
-:global(body) {
+/* ❌ HAPUS CSS GLOBAL INI - INI YANG BIKIN MASALAH! */
+/* :global(body) {
     overflow: hidden !important;
     position: fixed !important;
     width: 100%;
-}
+} */
 </style>

@@ -1,13 +1,68 @@
 import '../css/app.css'
 import './bootstrap'
 
-import { createInertiaApp, usePage } from '@inertiajs/vue3'
+import { createInertiaApp, router } from '@inertiajs/vue3'
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers'
-import { createApp, h, watch } from 'vue'
+import { createApp, h } from 'vue'
 import { ZiggyVue } from '../../vendor/tightenco/ziggy'
-import Swal from 'sweetalert2'
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel'
+
+// ========================================
+// ⭐ FIX SCROLL ISSUE - RESET BODY STATE
+// ========================================
+const resetBodyState = () => {
+    // Remove all scroll-blocking classes
+    document.body.classList.remove('modal-open')
+    document.body.classList.remove('drawer-open')
+    document.body.classList.remove('overflow-hidden')
+    document.body.classList.remove('swal2-shown')
+    document.body.classList.remove('swal2-height-auto')
+    
+    // Reset inline styles
+    document.body.style.overflow = ''
+    document.body.style.position = ''
+    document.body.style.width = ''
+    document.body.style.paddingRight = ''
+    
+    // Also reset html element
+    document.documentElement.style.overflow = ''
+    
+    // Remove modal backdrops
+    const modalBackdrop = document.querySelector('.modal-backdrop')
+    if (modalBackdrop) {
+        modalBackdrop.remove()
+    }
+    
+    // Remove swal containers yang tertinggal
+    const swalContainer = document.querySelector('.swal2-container')
+    if (swalContainer && !swalContainer.classList.contains('swal2-shown')) {
+        swalContainer.remove()
+    }
+}
+
+// Reset sebelum navigasi dimulai
+router.on('before', () => {
+    resetBodyState()
+})
+
+// Reset setelah navigasi selesai
+router.on('navigate', () => {
+    resetBodyState()
+})
+
+router.on('finish', () => {
+    // Delay sedikit untuk memastikan DOM sudah update
+    setTimeout(() => {
+        resetBodyState()
+    }, 50)
+})
+
+router.on('success', () => {
+    setTimeout(() => {
+        resetBodyState()
+    }, 100)
+})
 
 createInertiaApp({
     title: (title) => `${title} - ${appName}`,
@@ -25,40 +80,14 @@ createInertiaApp({
         vueApp.use(plugin)
         vueApp.use(ZiggyVue)
 
-        // GLOBAL FLASH WATCHER
-        vueApp.mixin({
-            setup() {
-                const page = usePage()
-
-                watch(
-                    () => page.props.flash,
-                    (flash) => {
-                        if (!flash) return
-
-                        if (flash.success) {
-                            Swal.fire({
-                                icon: 'success',
-                                title: flash.success,
-                                timer: 2000,
-                                showConfirmButton: false,
-                            })
-                        }
-
-                        if (flash.error) {
-                            Swal.fire({
-                                icon: 'error',
-                                title: flash.error,
-                                timer: 2000,
-                                showConfirmButton: false,
-                            })
-                        }
-                    },
-                    { deep: true }
-                )
-            },
-        })
+        // ❌ HAPUS GLOBAL FLASH WATCHER DARI SINI
+        // Biar tidak konflik dengan flash watcher di AuthenticatedLayout
+        // Flash message akan dihandle di masing-masing layout
 
         vueApp.mount(el)
+        
+        // ⭐ Reset body state setelah app mounted
+        resetBodyState()
     },
 
     progress: {

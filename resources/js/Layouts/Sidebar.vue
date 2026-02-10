@@ -126,11 +126,11 @@ watch(() => page.url, () => {
                  alt="Logo" />
         </Link>
     </div>
-
-    <!-- MENU -->
+ <!-- MENU -->
     <div class="app-sidebar-menu overflow-hidden flex-column-fluid">
         <div class="app-sidebar-wrapper hover-scroll-overlay-y my-5 mx-3"
              data-kt-scroll="true">
+
 
             <div class="menu menu-column menu-rounded menu-sub-indention fw-semibold fs-6"
                  data-kt-menu="true">

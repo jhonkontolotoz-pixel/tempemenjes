@@ -1,6 +1,6 @@
 <script setup>
 import Sidebar from '@/Layouts/Sidebar.vue'
-import { onMounted, watch } from 'vue'
+import { onMounted } from 'vue'
 import { usePage, router, Link } from '@inertiajs/vue3'
 import { useTheme } from '@/Composables/useTheme'
 import Swal from 'sweetalert2'
@@ -9,13 +9,24 @@ const page = usePage()
 const { isDark, toggleTheme } = useTheme()
 
 // =========================
-// METRONIC INIT
+// RESET BODY STATE (ANTI SCROLL LOCK)
 // =========================
+const resetBodyState = () => {
+    document.body.classList.remove('modal-open')
+    document.body.classList.remove('drawer-open')
+    document.body.style.overflow = 'auto'
+}
+
+// Jalankan saat pertama mount
 onMounted(() => {
-    if (window.KTMenu) {
-        window.KTMenu.createInstances()
-    }
+    resetBodyState()
 })
+
+// Jalankan setiap selesai navigasi Inertia
+router.on('finish', () => {
+    resetBodyState()
+})
+
 
 // =========================
 // LOGOUT HANDLER
@@ -23,6 +34,7 @@ onMounted(() => {
 const handleLogout = () => {
     router.post(route('logout'))
 }
+
 
 // =========================
 // TOAST CONFIG
@@ -35,30 +47,28 @@ const Toast = Swal.mixin({
     timerProgressBar: true,
 })
 
-// =========================
-// FLASH WATCHER (GLOBAL)
-// =========================
-watch(
-    () => page.props.flash,
-    (flash) => {
-        if (!flash) return
 
-        if (flash.success) {
-            Toast.fire({
-                icon: 'success',
-                title: flash.success,
-            })
-        }
+// =========================
+// FLASH WATCHER
+// =========================
+router.on('success', (event) => {
+    const flash = event.detail.page.props.flash
+    if (!flash) return
 
-        if (flash.error) {
-            Toast.fire({
-                icon: 'error',
-                title: flash.error,
-            })
-        }
-    },
-    { immediate: true }
-)
+    if (flash.success) {
+        Toast.fire({
+            icon: 'success',
+            title: flash.success,
+        })
+    }
+
+    if (flash.error) {
+        Toast.fire({
+            icon: 'error',
+            title: flash.error,
+        })
+    }
+})
 </script>
 
 <template>

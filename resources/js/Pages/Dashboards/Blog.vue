@@ -1,5 +1,5 @@
 <script setup>
-import Header from '@/Pages/Dashboards/Layouts/Header.vue'
+import Authenticated from '@/Layouts/AuthenticatedLayout.vue'
 import { Head, usePage, Link } from '@inertiajs/vue3'
 
 const page = usePage()
@@ -47,16 +47,10 @@ const updates = [
 <template>
     <Head :title="`INILAHGUA - ${user.name}`" />
 
-    <Header
+    <Authenticated
         title="InfoneBOS"
         :breadcrumbs="['Dashboard', 'Blog']"
     >
-        <!-- HEADER ACTION -->
-        <template #actions>
-            <Link href="#" class="btn btn-primary">
-                Create New
-            </Link>
-        </template>
 
         <!-- ===================== -->
         <!-- DASHBOARD -->
@@ -256,5 +250,5 @@ const updates = [
 
      </div>
 </div>
-    </Header>
+    </Authenticated>
 </template>

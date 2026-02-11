@@ -53,6 +53,8 @@ const submit = () => {
 
   // Kirim form ke backend
   form.post(route('login'), {
+    preserveScroll: true,      // ← Jangan scroll
+    preserveState: true,       // ← KUNCI! Jangan re-render component
     onFinish: () => {
       form.reset('password')
     },
@@ -65,7 +67,6 @@ const submit = () => {
         timer: 1500,
         showConfirmButton: false,
         didClose: () => {
-          // Reset body state setelah swal tutup
           document.body.style.overflow = ''
           document.body.style.position = ''
           document.body.style.width = ''
@@ -73,14 +74,31 @@ const submit = () => {
         }
       })
     },
-    onError: () => {
-      Swal.fire({
-        icon: 'error',
-        title: 'Login gagal!',
-        text: 'Salah input kali, Bro/Sist. Kagak ada di daftar nih',
-        timer: 2000,
-        showConfirmButton: false
-      })
+    onError: (errors) => {
+      console.log('Error dari backend:', errors)
+      
+      // ⚠️ GUNAKAN setTimeout UNTUK DELAY SEDIKIT
+      setTimeout(() => {
+        if (errors.email || errors.password) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Login Gagal!',
+            text: errors.email || errors.password || 'Email atau password salah!',
+            confirmButtonText: 'OK',
+            allowOutsideClick: false,
+            allowEscapeKey: false
+          })
+        } else {
+          Swal.fire({
+            icon: 'error',
+            title: 'Login Gagal!',
+            text: 'Terjadi kesalahan, silakan coba lagi',
+            confirmButtonText: 'OK',
+            allowOutsideClick: false,
+            allowEscapeKey: false
+          })
+        }
+      }, 100) // Delay 100ms agar component selesai re-render
     }
   })
 } 
@@ -127,7 +145,6 @@ const submit = () => {
             <!-- Password -->
             <div class="fv-row mb-8">
                 <InputLabel for="password" value="Password" class="form-label" />
-
                 <TextInput
                     id="password"
                     type="password"

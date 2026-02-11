@@ -16,4 +16,8 @@ class BloghomeController extends Controller
     {
         return Inertia::render('Dashboards/Blog');
     }
+     public function school(Request $request): Response
+    {
+        return Inertia::render('Dashboards/School');
+    }
 }

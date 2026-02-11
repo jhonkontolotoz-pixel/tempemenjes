@@ -30,7 +30,7 @@ const notifications = {
 // =========================
 const isDashboardGroupActive = computed(() =>
     isRouteGroup([
-        '/dashboard/bloghome',
+        '/dashboard/blog',
         '/dashboard/school'
     ])
 )
@@ -187,7 +187,7 @@ watch(() => page.url, () => {
                         <div class="menu-item">
                             <Link href="/dashboard/blog"
                                   class="menu-link"
-                                  :class="{ active: isActive('/dashboard/bloghome') }">
+                                  :class="{ active: isActive('/dashboard/blog') }">
                                 <span class="menu-bullet"><span class="bullet bullet-dot"></span></span>
                                 <span class="menu-title">Blog Home</span>
                             </Link>
@@ -295,7 +295,6 @@ watch(() => page.url, () => {
                              v-for="item in [
                                 {name:'Account', path:'/account-overview'},
                                 {name:'Profile', path:'/profile'},
-                                {name:'Contact', path:'/contact'},
                                 {name:'Calendar', path:'/calendar'}
                              ]"
                              :key="item.path">

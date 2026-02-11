@@ -27,6 +27,8 @@ Route::middleware('auth')->group(function () {
     
     Route::get('/dashboard/blog', [BloghomeController::class, 'index'])
         ->name('dashboard.blog');
+    Route::get('/dashboard/school', [BloghomeController::class, 'school'])
+        ->name('dashboard.school');
 });
 
 require __DIR__.'/auth.php';

@@ -3,23 +3,28 @@
 namespace Database\Seeders;
 
 use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
-    use WithoutModelEvents;
-
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
-        // User::factory(10)->create();
+        // Panggil RoleSeeder dulu agar tabel roles terisi
+        $this->call(RoleSeeder::class);
 
-        User::factory()->create([
-            'name' => 'Administrator',
+        // Buat user admin dan assign role_id = 1 (admin)
+        $admin = User::factory()->create([
+            'name'  => 'Administrator',
             'email' => 'admin@admin.com',
         ]);
+
+        // Cari role admin (pastikan sudah di-seed oleh RoleSeeder)
+        $roleAdmin = \App\Models\Role::where('name', 'admin')->first();
+        if ($roleAdmin) {
+            $admin->role()->associate($roleAdmin)->save();
+        }
+
+        // Optional: assign default role 'user' ke semua user lain
+        // (jika sudah ada user lain)
     }
 }

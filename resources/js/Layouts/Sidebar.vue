@@ -375,7 +375,6 @@ watch(() => page.url, () => {
                                 <span class="menu-title">Document</span>
                             </Link>
                         </div>
-
                     </div>
                 </div>
 
@@ -416,7 +415,7 @@ watch(() => page.url, () => {
     </div>
 
     <!-- FOOTER USER -->
-    <div class="app-sidebar-footer d-flex align-items-center px-8 pb-10">
+    <div class="app-sidebar-footer d-flex align-items-center px-8 pb-10">cm
         <div class="d-flex align-items-center flex-row-fluid">
             <div class="symbol symbol-circle symbol-35px me-3">
                 <img src="/media/avatars/300-14.jpg" alt="user" />

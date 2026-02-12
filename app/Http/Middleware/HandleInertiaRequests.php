@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use Illuminate\Http\Request;
 use Inertia\Middleware;
+use Tighten\Ziggy\Ziggy; // ✅ Tambahkan ini agar ziggy tersedia di frontend
 
 class HandleInertiaRequests extends Middleware
 {
@@ -27,19 +28,35 @@ class HandleInertiaRequests extends Middleware
      *
      * @return array<string, mixed>
      */
-   public function share(Request $request): array
-{
-    return [
-        ...parent::share($request),
+    public function share(Request $request): array
+    {
+        return [
+            ...parent::share($request),
 
-        'auth' => [
-            'user' => fn () => $request->user(),
-        ],
+            // ✅ Auth dengan data user terbatas + role
+            'auth' => [
+                'user' => $request->user() ? [
+                    'id'    => $request->user()->id,
+                    'name'  => $request->user()->name,
+                    'email' => $request->user()->email,
+                    'role'  => $request->user()->role ? [
+                        'id'   => $request->user()->role->id,
+                        'name' => $request->user()->role->name,
+                    ] : null,
+                ] : null,
+            ],
 
-        'flash' => [
-            'success' => fn () => $request->session()->get('success'),
-            'error'   => fn () => $request->session()->get('error'),
-        ],
-    ];
-}
+            // ✅ Flash message
+            'flash' => [
+                'success' => fn () => $request->session()->get('success'),
+                'error'   => fn () => $request->session()->get('error'),
+            ],
+
+            // ✅ Ziggy (untuk route() di Vue)
+            'ziggy' => fn () => [
+                ...(new Ziggy)->toArray(),
+                'location' => $request->url(),
+            ],
+        ];
+    }
 }

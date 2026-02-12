@@ -9,7 +9,6 @@ use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
 
     /**
@@ -21,6 +20,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role_id', // ✅ Tambahkan ini
     ];
 
     /**
@@ -44,5 +44,37 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    // ✅ Relasi ke Role
+    public function role()
+    {
+        return $this->belongsTo(Role::class);
+    }
+
+    // ✅ Helper check role (opsional, untuk kemudahan)
+    public function hasRole($roleName)
+    {
+        return $this->role?->name === $roleName;
+    }
+
+    public function isAdmin()
+    {
+        return $this->hasRole('admin');
+    }
+
+    public function isManager()
+    {
+        return $this->hasRole('manager');
+    }
+
+    public function isKasir()
+    {
+        return $this->hasRole('kasir');
+    }
+
+    public function isUser()
+    {
+        return $this->hasRole('user');
     }
 }

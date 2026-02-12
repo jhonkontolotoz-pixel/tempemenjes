@@ -80,17 +80,36 @@ const isProjectGroupActive = computed(() =>
 const handleLogout = () => {
     Swal.fire({
         title: 'Yakin logout?',
+        text: 'Kamu akan keluar dari sistem',
         icon: 'warning',
+
         showCancelButton: true,
         confirmButtonText: 'Ya',
         cancelButtonText: 'Batal',
+
+        buttonsStyling: true,
+
+        customClass: {
+            actions: 'd-flex justify-content-center gap-3'
+        },
+
+        // Ini yang penting untuk dark / light mode
+        background: 'var(--bs-body-bg)',
+        color: 'var(--bs-body-color)',
+
+      didOpen: (popup) => {
+    const title = popup.querySelector('.swal2-title')
+    if (title) {
+        title.style.color = 'var(--bs-body-color)'
+    }
+}
+
     }).then((result) => {
         if (result.isConfirmed) {
             router.post(route('logout'))
         }
     })
 }
-
 // =========================
 // METRONIC INIT
 // =========================
@@ -118,14 +137,32 @@ watch(() => page.url, () => {
      data-kt-drawer-direction="start"
      data-kt-drawer-toggle="#kt_app_sidebar_mobile_toggle">
 
-    <!-- LOGO -->
-    <div class="app-sidebar-logo px-6 py-9">
-        <Link href="/">
-            <img src="/media/logos/custom-1.png"
-                 class="h-50px"
+<!-- LOGO -->
+<div class="app-sidebar-logo px-6 py-8">
+    <div class="d-flex align-items-center justify-content-between 
+                bg-light-dark 
+                rounded-4 px-5 py-4 
+                border border-gray-200 border-gray-700-dark">
+
+        <div class="d-flex align-items-center">
+            <img src="/media/logos/cuyr-1.png"
+                 class="h-40px me-3"
                  alt="Logo" />
-        </Link>
+
+            <div class="d-flex flex-column">
+                <span class="fw-bold fs-4 text-gray-900 text-white-dark">
+                    RUDI APP
+                </span>
+                <span class="fs-7 text-gray-600 text-gray-400-dark">
+                    Workspace
+                </span>
+            </div>
+        </div>
+
+        <i class="ki-outline ki-arrow-down fs-5 text-gray-600 text-gray-400-dark"></i>
     </div>
+</div>
+
  <!-- MENU -->
     <div class="app-sidebar-menu overflow-hidden flex-column-fluid">
         <div class="app-sidebar-wrapper hover-scroll-overlay-y my-5 mx-3"
@@ -201,7 +238,6 @@ watch(() => page.url, () => {
                                 <span class="menu-title">School</span>
                             </Link>
                         </div>
-
                     </div>
                 </div>
 
@@ -239,7 +275,6 @@ watch(() => page.url, () => {
                                 <span class="menu-title">{{ item.name }}</span>
                             </Link>
                         </div>
-
                     </div>
                 </div>
 
@@ -273,7 +308,6 @@ watch(() => page.url, () => {
                                 <span class="menu-title">{{ item.name }}</span>
                             </Link>
                         </div>
-
                     </div>
                 </div>
 

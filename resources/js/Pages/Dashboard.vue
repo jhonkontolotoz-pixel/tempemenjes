@@ -69,7 +69,7 @@ const activities = ref([
                         <div class="me-7 mb-4">
                             <div class="symbol symbol-100px symbol-fixed position-relative">
                                 <img :src="profile.avatar" alt="avatar" />
-                                <div class="position-absolute translate-middle bottom-0 start-100 mb-6 bg-success rounded-circle border border-4 border-body h-20px w-20px"></div>
+                                <div class="position-absolute translate-middle bottom-0 start-100 mb-n5 bg-success rounded-circle border border-4 border-body h-20px w-20px"></div>
                             </div>
                         </div>
                         <!--end::Avatar-->

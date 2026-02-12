@@ -180,7 +180,7 @@ const recommendedCourses = [
 </script>
 
 <template>
-    <Head :title="`SMK Al Azhar Menganti Gresik - ${user.name}`" />
+    <Head :title="`SEKOLAHMU - ${user.name}`" />
 
     <Authenticated
         title="SMK Al Azhar Menganti Gresik"

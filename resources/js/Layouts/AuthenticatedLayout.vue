@@ -49,53 +49,92 @@ onMounted(() => {
 // LOGOUT HANDLER - DIPERBAIKI
 // =========================
 const handleLogout = () => {
-    // ✅ Tampilkan konfirmasi logout
     Swal.fire({
         title: 'Yakin mau logout?',
         text: 'Kamu akan keluar dari sistem',
         icon: 'warning',
+
         showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
         confirmButtonText: 'Ya, Logout!',
         cancelButtonText: 'Batal',
+
+        buttonsStyling: true,
+
+        customClass: {
+            actions: 'd-flex justify-content-center gap-3'
+        },
+
+        background: 'var(--bs-body-bg)',
+        color: 'var(--bs-body-color)',
+
+        didOpen: (popup) => {
+            const title = popup.querySelector('.swal2-title')
+            if (title) {
+                title.style.color = 'var(--bs-body-color)'
+            }
+        },
+
         didClose: () => {
             resetBodyState()
         }
+
     }).then((result) => {
         if (result.isConfirmed) {
-            // ✅ PERBAIKAN: Gunakan router.post dengan proper config
             router.post(route('logout'), {}, {
                 preserveScroll: false,
                 preserveState: false,
+
                 onBefore: () => {
-                    // Disable semua button sementara
                     document.body.style.pointerEvents = 'none'
                 },
+
                 onSuccess: () => {
-                    // Tampilkan toast logout berhasil
                     Swal.fire({
                         icon: 'success',
                         title: 'Logout Berhasil!',
                         text: 'Sampai jumpa lagi 👋',
                         timer: 1500,
                         showConfirmButton: false,
+
+                        background: 'var(--bs-body-bg)',
+                        color: 'var(--bs-body-color)',
+
+                        didOpen: (popup) => {
+                            const title = popup.querySelector('.swal2-title')
+                            if (title) {
+                                title.style.color = 'var(--bs-body-color)'
+                            }
+                        },
+
                         didClose: () => {
                             resetBodyState()
                             document.body.style.pointerEvents = ''
                         }
                     })
                 },
+
                 onError: () => {
                     document.body.style.pointerEvents = ''
+
                     Swal.fire({
                         icon: 'error',
                         title: 'Logout Gagal!',
                         text: 'Terjadi kesalahan, coba lagi',
                         timer: 2000,
-                        showConfirmButton: false
+                        showConfirmButton: false,
+
+                        background: 'var(--bs-body-bg)',
+                        color: 'var(--bs-body-color)',
+
+                        didOpen: (popup) => {
+                            const title = popup.querySelector('.swal2-title')
+                            if (title) {
+                                title.style.color = 'var(--bs-body-color)'
+                            }
+                        }
                     })
                 },
+
                 onFinish: () => {
                     resetBodyState()
                     document.body.style.pointerEvents = ''

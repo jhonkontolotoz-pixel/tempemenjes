@@ -1,6 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Apps;
+
+use App\Http\Controllers\Controller;
 
 use App\Models\ProductReview;
 use App\Models\Product;

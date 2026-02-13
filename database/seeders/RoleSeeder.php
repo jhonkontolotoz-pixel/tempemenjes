@@ -10,21 +10,13 @@ class RoleSeeder extends Seeder
 {
     public function run(): void
     {
-        // Buat roles
-        $admin = Role::create(['name' => 'admin']);
-        $manager = Role::create(['name' => 'manager']);
-        $kasir = Role::create(['name' => 'kasir']);
-        $user = Role::create(['name' => 'user']);
+        // firstOrCreate agar aman saat di-seed ulang
+        $admin   = Role::firstOrCreate(['name' => 'admin'],   ['guard_name' => 'web']);
+        $manager = Role::firstOrCreate(['name' => 'manager'], ['guard_name' => 'web']);
+        $kasir   = Role::firstOrCreate(['name' => 'kasir'],   ['guard_name' => 'web']);
+        $user    = Role::firstOrCreate(['name' => 'user'],    ['guard_name' => 'web']);
 
-        // Assign role ke user pertama (biasanya admin)
-        $userAdmin = User::first();
-        if ($userAdmin) {
-            $userAdmin->role()->associate($admin)->save();
-        }
-
-        // (Opsional) assign role ke semua user lain dengan default 'user'
-        User::whereNull('role_id')->each(function ($u) use ($user) {
-            $u->role()->associate($user)->save();
-        });
+        // Assign default role 'user' ke semua user yang belum punya role
+        User::whereNull('role_id')->each(fn($u) => $u->update(['role_id' => $user->id]));
     }
 }

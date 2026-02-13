@@ -4,36 +4,23 @@ namespace App\Http\Middleware;
 
 use Illuminate\Http\Request;
 use Inertia\Middleware;
-use Tighten\Ziggy\Ziggy; // ✅ Tambahkan ini agar ziggy tersedia di frontend
 
 class HandleInertiaRequests extends Middleware
 {
-    /**
-     * The root template that is loaded on the first page visit.
-     *
-     * @var string
-     */
     protected $rootView = 'app';
 
-    /**
-     * Determine the current asset version.
-     */
     public function version(Request $request): ?string
     {
         return parent::version($request);
     }
 
     /**
-     * Define the props that are shared by default.
-     *
-     * @return array<string, mixed>
+     * Share data ke semua halaman Inertia (termasuk auth.user.role)
      */
     public function share(Request $request): array
     {
         return [
             ...parent::share($request),
-
-            // ✅ Auth dengan data user terbatas + role
             'auth' => [
                 'user' => $request->user() ? [
                     'id'    => $request->user()->id,
@@ -45,17 +32,10 @@ class HandleInertiaRequests extends Middleware
                     ] : null,
                 ] : null,
             ],
-
-            // ✅ Flash message
+            // Flash messages untuk SweetAlert2 toast
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),
                 'error'   => fn () => $request->session()->get('error'),
-            ],
-
-            // ✅ Ziggy (untuk route() di Vue)
-            'ziggy' => fn () => [
-                ...(new Ziggy)->toArray(),
-                'location' => $request->url(),
             ],
         ];
     }

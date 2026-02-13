@@ -1,34 +1,70 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
-use Illuminate\Foundation\Application;
+use App\Http\Controllers\Apps\CustomerController;
+use App\Http\Controllers\Apps\POSController;
+use App\Http\Controllers\Apps\ProductController;
+use App\Http\Controllers\Apps\ReportController;
+use App\Http\Controllers\Dashboard\BloghomeController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
-use App\Http\Controllers\Dashboard\BloghomeController;
 
-// Route::get('/', function () {
-//     return Inertia::render('Welcome', [
-//         'canLogin' => Route::has('login'),
-//         'canRegister' => Route::has('register'),
-//         'laravelVersion' => Application::VERSION,
-//         'phpVersion' => PHP_VERSION,
-//     ]);
-// });
-
+// ================================
+// HOME → Dashboard
+// ================================
 Route::get('/', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
+// ================================
+// AUTH ROUTES
+// ================================
 Route::middleware('auth')->group(function () {
+
+    // Profile
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    
-    Route::get('/dashboard/blog', [BloghomeController::class, 'index'])
-        ->name('dashboard.blog');
-    Route::get('/dashboard/school', [BloghomeController::class, 'school'])
-        ->name('dashboard.school');
+    // Dashboard variants
+    Route::get('/dashboard/blog', [BloghomeController::class, 'index'])->name('dashboard.blog');
+    Route::get('/dashboard/school', [BloghomeController::class, 'school'])->name('dashboard.school');
+
+    // ================================
+    // CUSTOMERS — Admin & Manager only
+    // ================================
+    Route::middleware('role:admin,manager')->group(function () {
+        Route::get('/customers', [CustomerController::class, 'index'])->name('customers.index');
+        Route::post('/customers', [CustomerController::class, 'store'])->name('customers.store');
+        Route::patch('/customers/{customer}', [CustomerController::class, 'update'])->name('customers.update');
+        Route::delete('/customers/{customer}', [CustomerController::class, 'destroy'])->name('customers.destroy');
+    });
+
+    // ================================
+    // PRODUCTS — Admin & Manager only
+    // ================================
+    Route::middleware('role:admin,manager')->group(function () {
+        Route::get('/products', [ProductController::class, 'index'])->name('products.index');
+        Route::post('/products', [ProductController::class, 'store'])->name('products.store');
+        Route::patch('/products/{product}', [ProductController::class, 'update'])->name('products.update');
+        Route::delete('/products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
+    });
+
+    // ================================
+    // REPORTS — Admin & Manager only
+    // ================================
+    Route::middleware('role:admin,manager')->group(function () {
+        Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
+    });
+
+    // ================================
+    // POS — Admin & Kasir only
+    // ================================
+    Route::middleware('role:admin,kasir')->group(function () {
+        Route::get('/pos', [POSController::class, 'index'])->name('pos.index');
+        Route::post('/pos/checkout', [POSController::class, 'checkout'])->name('pos.checkout');
+    });
+
 });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';

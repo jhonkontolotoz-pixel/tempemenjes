@@ -4,27 +4,44 @@ namespace Database\Seeders;
 
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // Panggil RoleSeeder dulu agar tabel roles terisi
+        // Seed roles dulu
         $this->call(RoleSeeder::class);
 
-        // Buat user admin dan assign role_id = 1 (admin)
-        $admin = User::factory()->create([
-            'name'  => 'Administrator',
-            'email' => 'admin@admin.com',
-        ]);
+        $adminRole = \App\Models\Role::where('name', 'admin')->first();
 
-        // Cari role admin (pastikan sudah di-seed oleh RoleSeeder)
-        $roleAdmin = \App\Models\Role::where('name', 'admin')->first();
-        if ($roleAdmin) {
-            $admin->role()->associate($roleAdmin)->save();
-        }
+        // Buat user admin (firstOrCreate agar tidak duplikat)
+        $admin = User::firstOrCreate(
+            ['email' => 'admin@admin.com'],
+            [
+                'name'     => 'Administrator',
+                'password' => Hash::make('password'),
+                'role_id'  => $adminRole?->id,
+            ]
+        );
 
-        // Optional: assign default role 'user' ke semua user lain
-        // (jika sudah ada user lain)
+        // Buat user demo lainnya
+        User::firstOrCreate(
+            ['email' => 'manager@demo.com'],
+            [
+                'name'     => 'Manager Demo',
+                'password' => Hash::make('password'),
+                'role_id'  => \App\Models\Role::where('name', 'manager')->first()?->id,
+            ]
+        );
+
+        User::firstOrCreate(
+            ['email' => 'kasir@demo.com'],
+            [
+                'name'     => 'Kasir Demo',
+                'password' => Hash::make('password'),
+                'role_id'  => \App\Models\Role::where('name', 'kasir')->first()?->id,
+            ]
+        );
     }
 }

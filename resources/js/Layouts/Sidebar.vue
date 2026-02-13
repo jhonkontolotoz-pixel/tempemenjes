@@ -1,117 +1,131 @@
 <script setup>
+/**
+ * Sidebar.vue - RBAC-Aware Sidebar Component
+ * 
+ * Komponen sidebar yang menampilkan menu dinamis berdasarkan role user.
+ * Menggunakan Metronic 8 styling dan Vue 3 Composition API.
+ * 
+ * Role Access:
+ * - Admin: Full access (Dashboard, Customers, Products, Reports, POS, Profile)
+ * - Manager: Dashboard, Customers, Products, Reports, Profile
+ * - Kasir: Dashboard, POS, Profile
+ * - User: Dashboard, Profile only
+ */
+
 import { computed, onMounted, watch } from 'vue'
 import { usePage, router, Link } from '@inertiajs/vue3'
+import { useRole } from '@/Composables/useRole'
 import Swal from 'sweetalert2'
 
 const page = usePage()
-const user = computed(() => page.props.auth?.user)
+const { isAdmin, isManager, isKasir, hasRole } = useRole()
 
+const user = computed(() => page.props.auth?.user)
 const currentUrl = computed(() => page.url)
 
 // =========================
 // ROUTE HELPERS
 // =========================
-const isActive = (path) =>
+const isActive = (path) => 
     currentUrl.value === path || currentUrl.value.startsWith(path + '/')
 
-const isRouteGroup = (paths) =>
-    paths.some(path => currentUrl.value.startsWith(path))
+// =========================
+// ROLE-BASED MENU VISIBILITY
+// =========================
+const canAccessCustomers = computed(() => isAdmin.value || isManager.value)
+const canAccessProducts = computed(() => isAdmin.value || isManager.value)
+const canAccessReports = computed(() => isAdmin.value || isManager.value)
+const canAccessPOS = computed(() => isAdmin.value || isKasir.value)
 
 // =========================
-// NOTIFICATIONS
+// MENU CONFIGURATION
 // =========================
-const notifications = {
-    tasks: 5,
-    activities: 99,
-}
+const menuItems = computed(() => [
+    {
+        id: 'dashboard',
+        title: 'Dashboard',
+        path: '/',
+        icon: 'ki-home-2',
+        show: true, // All roles can access
+    },
+    {
+        id: 'customers',
+        title: 'Customers',
+        path: '/customers',
+        icon: 'ki-user',
+        show: canAccessCustomers.value,
+        badge: null,
+    },
+    {
+        id: 'products',
+        title: 'Products',
+        path: '/products',
+        icon: 'ki-shop',
+        show: canAccessProducts.value,
+        badge: null,
+    },
+    {
+        id: 'reports',
+        title: 'Reports',
+        path: '/reports',
+        icon: 'ki-chart',
+        show: canAccessReports.value,
+        badge: null,
+    },
+    {
+        id: 'pos',
+        title: 'POS',
+        path: '/pos',
+        icon: 'ki-calculator',
+        show: canAccessPOS.value,
+        badge: { text: 'New', color: 'success' },
+    },
+    {
+        id: 'profile',
+        title: 'Profile',
+        path: '/profile',
+        icon: 'ki-profile-circle',
+        show: true, // All roles can access
+    },
+])
+
+// Filter hanya menu yang boleh ditampilkan
+const visibleMenuItems = computed(() => 
+    menuItems.value.filter(item => item.show)
+)
 
 // =========================
-// GROUP STATES
-// =========================
-const isDashboardGroupActive = computed(() =>
-    isRouteGroup([
-        '/dashboard/blog',
-        '/dashboard/school'
-    ])
-)
-
-const isAppsGroupActive = computed(() =>
-    isRouteGroup([
-        '/apps/pos',
-        '/apps/user-list',
-        '/apps/customer',
-        '/apps/product',
-        '/apps/financeperformances',
-        '/apps/roles-permission',
-        '/apps/invoice-view',
-        '/apps/invoice-create'
-    ])
-)
-
-const isReportsGroupActive = computed(() =>
-    isRouteGroup([
-        '/productviewed',
-        '/sales',
-        '/customer-orders',
-        '/shipping'
-    ])
-)
-
-const isPagesGroupActive = computed(() =>
-    isRouteGroup([
-        '/account-overview',
-        '/profile',
-        '/contact',
-        '/calendar'
-    ])
-)
-
-const isHelpGroupActive = computed(() =>
-    isRouteGroup(['/help'])
-)
-
-const isProjectGroupActive = computed(() =>
-    isRouteGroup(['/project'])
-)
-
-// =========================
-// LOGOUT
+// LOGOUT HANDLER
 // =========================
 const handleLogout = () => {
     Swal.fire({
         title: 'Yakin logout?',
         text: 'Kamu akan keluar dari sistem',
         icon: 'warning',
-
         showCancelButton: true,
-        confirmButtonText: 'Ya',
+        confirmButtonText: 'Ya, Logout',
         cancelButtonText: 'Batal',
-
         buttonsStyling: true,
-
         customClass: {
             actions: 'd-flex justify-content-center gap-3'
         },
-
-        // Ini yang penting untuk dark / light mode
         background: 'var(--bs-body-bg)',
         color: 'var(--bs-body-color)',
-
-      didOpen: (popup) => {
-    const title = popup.querySelector('.swal2-title')
-    if (title) {
-        title.style.color = 'var(--bs-body-color)'
-    }
-}
-
+        didOpen: (popup) => {
+            const title = popup.querySelector('.swal2-title')
+            if (title) {
+                title.style.color = 'var(--bs-body-color)'
+            }
+        }
     }).then((result) => {
         if (result.isConfirmed) {
             router.post(route('logout'))
         }
     })
 }
+
 // =========================
-// METRONIC INIT
+// METRONIC MENU INIT
 // =========================
 const reinitMenu = () => {
     if (window.KTMenu) {
@@ -137,275 +151,90 @@ watch(() => page.url, () => {
      data-kt-drawer-direction="start"
      data-kt-drawer-toggle="#kt_app_sidebar_mobile_toggle">
 
-<!-- LOGO -->
-<div class="app-sidebar-logo px-6 py-8">
-    <div class="d-flex align-items-center justify-content-between 
-                bg-light-dark 
-                rounded-4 px-5 py-4 
-                border border-gray-200 border-gray-700-dark">
-
-        <div class="d-flex align-items-center">
-            <img src="/media/logos/cuyr-1.png"
-                 class="h-40px me-3"
-                 alt="Logo" />
-
-            <div class="d-flex flex-column">
-                <span class="fw-bold fs-4 text-gray-900 text-white-dark">
-                    RUDI APP
-                </span>
-                <span class="fs-7 text-gray-600 text-gray-400-dark">
-                    Workspace
-                </span>
+    <!-- LOGO -->
+    <div class="app-sidebar-logo px-6 py-8">
+        <div class="d-flex align-items-center justify-content-between 
+                    bg-light-dark 
+                    rounded-4 px-5 py-4 
+                    border border-gray-200 border-gray-700-dark">
+            
+            <div class="d-flex align-items-center">
+                <img src="/media/logos/cuyr-1.png"
+                     class="h-40px me-3"
+                     alt="Logo" />
+                
+                <div class="d-flex flex-column">
+                    <span class="fw-bold fs-4 text-gray-900 text-white-dark">
+                        POS System
+                    </span>
+                    <span class="fs-7 text-gray-600 text-gray-400-dark">
+                        {{ user?.role?.name || 'User' }}
+                    </span>
+                </div>
             </div>
+
+            <i class="ki-outline ki-arrow-down fs-5 text-gray-600 text-gray-400-dark"></i>
         </div>
-
-        <i class="ki-outline ki-arrow-down fs-5 text-gray-600 text-gray-400-dark"></i>
     </div>
-</div>
 
- <!-- MENU -->
+    <!-- MENU -->
     <div class="app-sidebar-menu overflow-hidden flex-column-fluid">
         <div class="app-sidebar-wrapper hover-scroll-overlay-y my-5 mx-3"
-             data-kt-scroll="true">
-
+             data-kt-scroll="true"
+             data-kt-scroll-activate="true"
+             data-kt-scroll-height="auto"
+             data-kt-scroll-dependencies="#kt_app_sidebar_logo, #kt_app_sidebar_footer"
+             data-kt-scroll-wrappers="#kt_app_sidebar_menu"
+             data-kt-scroll-offset="5px">
 
             <div class="menu menu-column menu-rounded menu-sub-indention fw-semibold fs-6"
+                 id="#kt_app_sidebar_menu"
                  data-kt-menu="true">
 
-                <!-- TASKS -->
-                <div class="menu-item">
-                    <Link href="/tasks"
+                <!-- MENU ITEMS (Role-based) -->
+                <div v-for="item in visibleMenuItems" 
+                     :key="item.id"
+                     class="menu-item">
+                    
+                    <Link :href="item.path"
                           class="menu-link"
-                          :class="{ active: isActive('/tasks') }">
-                        <span class="menu-icon"><i class="ki-outline ki-element-11 fs-2"></i></span>
-                        <span class="menu-title">Tasks</span>
-                        <span class="badge badge-primary badge-sm">
-                            {{ notifications.tasks }}
+                          :class="{ active: isActive(item.path) }">
+                        
+                        <span class="menu-icon">
+                            <i :class="`ki-outline ${item.icon} fs-2`"></i>
+                        </span>
+                        
+                        <span class="menu-title">{{ item.title }}</span>
+                        
+                        <!-- Badge jika ada -->
+                        <span v-if="item.badge" 
+                              class="badge badge-sm"
+                              :class="`badge-${item.badge.color}`">
+                            {{ item.badge.text }}
                         </span>
                     </Link>
                 </div>
 
-                <!-- ACTIVITIES -->
+                <!-- DIVIDER -->
                 <div class="menu-item">
-                    <Link href="/activities"
-                          class="menu-link"
-                          :class="{ active: isActive('/activities') }">
-                        <span class="menu-icon"><i class="ki-outline ki-calendar fs-2"></i></span>
-                        <span class="menu-title">Activities</span>
-                        <span class="badge badge-danger badge-sm">
-                            {{ notifications.activities }}
-                        </span>
-                    </Link>
-                </div>
-
-                <!-- DASHBOARD -->
-                <div class="menu-item menu-accordion"
-                     data-kt-menu-trigger="click"
-                     :class="{ show: isDashboardGroupActive }">
-
-                    <span class="menu-link">
-                        <span class="menu-icon"><i class="ki-outline ki-home-2 fs-2"></i></span>
-                        <span class="menu-title">Dashboard</span>
-                        <span class="menu-arrow"></span>
-                    </span>
-
-                    <div class="menu-sub menu-sub-accordion"
-                         :class="{ show: isDashboardGroupActive }">
-
-                        <div class="menu-item">
-                            <Link href="/"
-                                  class="menu-link"
-                                  :class="{ active: isActive('/') }">
-                                <span class="menu-bullet"><span class="bullet bullet-dot"></span></span>
-                                <span class="menu-title">Default</span>
-                            </Link>
-                        </div>
-
-                        <div class="menu-item">
-                            <Link href="/dashboard/blog"
-                                  class="menu-link"
-                                  :class="{ active: isActive('/dashboard/blog') }">
-                                <span class="menu-bullet"><span class="bullet bullet-dot"></span></span>
-                                <span class="menu-title">Blog Home</span>
-                            </Link>
-                        </div>
-
-                        <div class="menu-item">
-                            <Link href="/dashboard/school"
-                                  class="menu-link"
-                                  :class="{ active: isActive('/dashboard/school') }">
-                                <span class="menu-bullet"><span class="bullet bullet-dot"></span></span>
-                                <span class="menu-title">School</span>
-                            </Link>
-                        </div>
+                    <div class="menu-content">
+                        <div class="separator mx-1 my-4"></div>
                     </div>
                 </div>
 
-                <!-- APPS -->
-                <div class="menu-item menu-accordion mt-5"
-                     data-kt-menu-trigger="click"
-                     :class="{ show: isAppsGroupActive }">
-
-                    <span class="menu-link">
-                        <span class="menu-icon"><i class="ki-outline ki-abstract-45 fs-2"></i></span>
-                        <span class="menu-title">Apps</span>
-                        <span class="menu-arrow"></span>
-                    </span>
-
-                    <div class="menu-sub menu-sub-accordion"
-                         :class="{ show: isAppsGroupActive }">
-
-                        <div class="menu-item"
-                             v-for="item in [
-                                {name:'POS System', path:'/apps/pos'},
-                                {name:'User List', path:'/apps/user-list'},
-                                {name:'Customer', path:'/apps/customer'},
-                                {name:'Product', path:'/apps/product'},
-                                {name:'Finance Performances', path:'/apps/financeperformances'},
-                                {name:'Roles Permissions', path:'/apps/roles-permission'},
-                                {name:'Invoice Manager', path:'/apps/invoice-view'},
-                                {name:'Invoice Create', path:'/apps/invoice-create'}
-                             ]"
-                             :key="item.path">
-
-                            <Link :href="item.path"
-                                  class="menu-link"
-                                  :class="{ active: isActive(item.path) }">
-                                <span class="menu-bullet"><span class="bullet bullet-dot"></span></span>
-                                <span class="menu-title">{{ item.name }}</span>
-                            </Link>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- REPORTS -->
-                <div class="menu-item menu-accordion mt-5"
-                     data-kt-menu-trigger="click"
-                     :class="{ show: isReportsGroupActive }">
-
-                    <span class="menu-link">
-                        <span class="menu-icon"><i class="ki-outline ki-chart fs-2"></i></span>
-                        <span class="menu-title">Reports</span>
-                        <span class="menu-arrow"></span>
-                    </span>
-
-                    <div class="menu-sub menu-sub-accordion"
-                         :class="{ show: isReportsGroupActive }">
-
-                        <div class="menu-item"
-                             v-for="item in [
-                                {name:'Product Viewed', path:'/productviewed'},
-                                {name:'Sales', path:'/sales'},
-                                {name:'Customer Orders', path:'/customer-orders'},
-                                {name:'Shipping', path:'/shipping'}
-                             ]"
-                             :key="item.path">
-
-                            <Link :href="item.path"
-                                  class="menu-link"
-                                  :class="{ active: isActive(item.path) }">
-                                <span class="menu-bullet"><span class="bullet bullet-dot"></span></span>
-                                <span class="menu-title">{{ item.name }}</span>
-                            </Link>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- PAGES -->
-                <div class="menu-item menu-accordion mt-5"
-                     data-kt-menu-trigger="click"
-                     :class="{ show: isPagesGroupActive }">
-
-                    <span class="menu-link">
-                        <span class="menu-icon"><i class="ki-outline ki-abstract-26 fs-2"></i></span>
-                        <span class="menu-title">Pages</span>
-                        <span class="menu-arrow"></span>
-                    </span>
-
-                    <div class="menu-sub menu-sub-accordion"
-                         :class="{ show: isPagesGroupActive }">
-
-                        <div class="menu-item"
-                             v-for="item in [
-                                {name:'Account', path:'/account-overview'},
-                                {name:'Profile', path:'/profile'},
-                                {name:'Calendar', path:'/calendar'}
-                             ]"
-                             :key="item.path">
-
-                            <Link :href="item.path"
-                                  class="menu-link"
-                                  :class="{ active: isActive(item.path) }">
-                                <span class="menu-bullet"><span class="bullet bullet-dot"></span></span>
-                                <span class="menu-title">{{ item.name }}</span>
-                            </Link>
-                        </div>
-
-                    </div>
-                </div>
-
-                <!-- HELP -->
-                <div class="menu-item menu-accordion mt-5"
-                     data-kt-menu-trigger="click"
-                     :class="{ show: isHelpGroupActive }">
-
-                    <span class="menu-link">
-                        <span class="menu-icon"><i class="ki-outline ki-information fs-2"></i></span>
-                        <span class="menu-title">Help</span>
-                        <span class="menu-arrow"></span>
-                    </span>
-
-                    <div class="menu-sub menu-sub-accordion"
-                         :class="{ show: isHelpGroupActive }">
-
-                        <div class="menu-item">
-                            <Link href="/help/component"
-                                  class="menu-link"
-                                  :class="{ active: isActive('/help/component') }">
-                                <span class="menu-bullet"><span class="bullet bullet-dot"></span></span>
-                                <span class="menu-title">Component</span>
-                            </Link>
-                        </div>
-
-                        <div class="menu-item">
-                            <Link href="/help/document"
-                                  class="menu-link"
-                                  :class="{ active: isActive('/help/document') }">
-                                <span class="menu-bullet"><span class="bullet bullet-dot"></span></span>
-                                <span class="menu-title">Document</span>
-                            </Link>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- PROJECT -->
-                <div class="menu-item menu-accordion mt-5"
-                     data-kt-menu-trigger="click"
-                     :class="{ show: isProjectGroupActive }">
-
-                    <span class="menu-link">
-                        <span class="menu-icon"><i class="ki-outline ki-folder fs-2"></i></span>
-                        <span class="menu-title">Project</span>
-                        <span class="menu-arrow"></span>
-                    </span>
-
-                    <div class="menu-sub menu-sub-accordion">
-                        <div class="menu-item">
-                            <a href="https://github.com/jhonkontolotoz-pixel/kasir-ulfah"
-                               class="menu-link"
-                               target="_blank">
-                                <span class="menu-bullet"><span class="bullet bullet-dot"></span></span>
-                                <span class="menu-title">1. KASIR SPA</span>
-                            </a>
-                        </div>
-
-                        <div class="menu-item">
-                            <a href="https://github.com/jhonkontolotoz-pixel/dashboard-management"
-                               class="menu-link"
-                               target="_blank">
-                                <span class="menu-bullet"><span class="bullet bullet-dot"></span></span>
-                                <span class="menu-title">2. Login Register SPA</span>
-                            </a>
+                <!-- ROLE INDICATOR -->
+                <div class="menu-item">
+                    <div class="menu-content px-3 py-3">
+                        <div class="d-flex align-items-center bg-light-primary rounded p-3">
+                            <i class="ki-outline ki-shield-tick fs-2x text-primary me-3"></i>
+                            <div class="flex-grow-1">
+                                <div class="fw-bold text-gray-800 fs-7">
+                                    {{ user?.role?.name || 'User' }}
+                                </div>
+                                <div class="text-muted fs-8">
+                                    Current Role
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -415,21 +244,26 @@ watch(() => page.url, () => {
     </div>
 
     <!-- FOOTER USER -->
-    <div class="app-sidebar-footer d-flex align-items-center px-8 pb-10">cm
+    <div class="app-sidebar-footer d-flex align-items-center px-8 pb-10" 
+         id="kt_app_sidebar_footer">
         <div class="d-flex align-items-center flex-row-fluid">
-            <div class="symbol symbol-circle symbol-35px me-3">
-                <img src="/media/avatars/300-14.jpg" alt="user" />
+            <div class="symbol symbol-circle symbol-40px me-3">
+                <img :src="user?.avatar || '/media/avatars/300-14.jpg'" 
+                     :alt="user?.name" />
             </div>
-            <div class="d-flex flex-column">
+            <div class="d-flex flex-column flex-grow-1">
                 <span class="text-white fw-bold fs-7">
                     {{ user?.name || 'User' }}
                 </span>
-                <span class="text-gray-400 fs-8">Welcome</span>
+                <span class="text-gray-400 fs-8">
+                    {{ user?.email || 'user@example.com' }}
+                </span>
             </div>
         </div>
 
         <button @click="handleLogout"
-                class="btn btn-icon btn-sm btn-danger w-30px h-30px">
+                class="btn btn-icon btn-sm btn-danger w-35px h-35px ms-2"
+                title="Logout">
             <i class="ki-outline ki-exit-right fs-2"></i>
         </button>
     </div>
@@ -438,14 +272,18 @@ watch(() => page.url, () => {
 </template>
 
 <style scoped>
-/* Sidebar SELALU DARK - tidak peduli light/dark mode */
+/* ========================================
+   SIDEBAR DARK MODE - Always Dark
+   ======================================== */
+
 .sidebar-dark {
     background-color: #1e1e2d !important;
 }
 
-/* Text di sidebar selalu putih/terang */
+/* Menu Links */
 .sidebar-dark .menu-link {
     color: #92929f;
+    transition: all 0.2s ease;
 }
 
 .sidebar-dark .menu-link:hover {
@@ -458,6 +296,7 @@ watch(() => page.url, () => {
     color: #3699ff;
 }
 
+/* Menu Title */
 .sidebar-dark .menu-title {
     color: #92929f;
 }
@@ -470,6 +309,7 @@ watch(() => page.url, () => {
     color: #3699ff;
 }
 
+/* Menu Icons */
 .sidebar-dark .menu-icon i {
     color: #494b74;
 }
@@ -482,16 +322,39 @@ watch(() => page.url, () => {
     color: #3699ff;
 }
 
-.sidebar-dark .menu-arrow {
-    color: #494b74;
+/* Scrollbar */
+.sidebar-dark .hover-scroll-overlay-y::-webkit-scrollbar {
+    width: 6px;
 }
 
-/* Scrollbar dark */
 .sidebar-dark .hover-scroll-overlay-y::-webkit-scrollbar-thumb {
     background-color: #2b2b40;
+    border-radius: 10px;
 }
 
 .sidebar-dark .hover-scroll-overlay-y::-webkit-scrollbar-track {
     background-color: #1e1e2d;
+}
+
+/* Badge Styling */
+.badge-sm {
+    padding: 4px 8px;
+    font-size: 0.75rem;
+}
+
+/* Role Indicator */
+.bg-light-primary {
+    background-color: rgba(54, 153, 255, 0.1) !important;
+}
+
+/* Footer */
+.app-sidebar-footer {
+    border-top: 1px solid #2b2b40;
+}
+
+/* Separator */
+.separator {
+    height: 1px;
+    background-color: #2b2b40;
 }
 </style>

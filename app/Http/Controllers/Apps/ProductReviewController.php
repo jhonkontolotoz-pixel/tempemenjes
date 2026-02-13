@@ -3,11 +3,11 @@
 namespace App\Http\Controllers\Apps;
 
 use App\Http\Controllers\Controller;
-
 use App\Models\ProductReview;
 use App\Models\Product;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
 /**
@@ -37,7 +37,7 @@ class ProductReviewController extends Controller
             ->with(['customer', 'transaction']);
 
         // Filter by status (only admin/manager can see non-approved)
-        if (auth()->user()->hasRole('admin') || auth()->user()->hasRole('manager')) {
+        if ($this->isAdminOrManager()) {
             if ($request->has('status')) {
                 $query->where('status', $request->status);
             }
@@ -100,7 +100,7 @@ class ProductReviewController extends Controller
      */
     public function create(Product $product)
     {
-        $customerId = auth()->user()->customer_id ?? null;
+        $customerId = $this->getCurrentUser()->customer_id ?? null;
 
         // Check if user has purchased this product
         $hasPurchased = false;
@@ -138,7 +138,7 @@ class ProductReviewController extends Controller
      */
     public function store(Request $request, Product $product)
     {
-        $customerId = auth()->user()->customer_id ?? null;
+        $customerId = $this->getCurrentUser()->customer_id ?? null;
 
         if (!$customerId) {
             return back()->withErrors([
@@ -205,10 +205,10 @@ class ProductReviewController extends Controller
      */
     public function update(Request $request, Product $product, ProductReview $review)
     {
-        $customerId = auth()->user()->customer_id ?? null;
+        $customerId = $this->getCurrentUser()->customer_id ?? null;
 
         // Authorization check
-        if (!auth()->user()->hasRole('admin') && $review->customer_id !== $customerId) {
+        if (!($this->getCurrentUser()?->role?->name === 'admin') && $review->customer_id !== $customerId) {
             abort(403, 'You can only edit your own reviews.');
         }
 
@@ -234,10 +234,10 @@ class ProductReviewController extends Controller
      */
     public function destroy(Product $product, ProductReview $review)
     {
-        $customerId = auth()->user()->customer_id ?? null;
+        $customerId = $this->getCurrentUser()->customer_id ?? null;
 
         // Authorization check
-        if (!auth()->user()->hasRole('admin') && $review->customer_id !== $customerId) {
+        if (!($this->getCurrentUser()?->role?->name === 'admin') && $review->customer_id !== $customerId) {
             abort(403, 'You can only delete your own reviews.');
         }
 
@@ -253,7 +253,7 @@ class ProductReviewController extends Controller
     public function approve(Product $product, ProductReview $review)
     {
         // Only admin/manager can approve
-        if (!auth()->user()->hasRole('admin') && !auth()->user()->hasRole('manager')) {
+        if (!$this->isAdminOrManager()) {
             abort(403, 'Only administrators and managers can approve reviews.');
         }
 
@@ -268,7 +268,7 @@ class ProductReviewController extends Controller
     public function reject(Product $product, ProductReview $review)
     {
         // Only admin/manager can reject
-        if (!auth()->user()->hasRole('admin') && !auth()->user()->hasRole('manager')) {
+        if (!$this->isAdminOrManager()) {
             abort(403, 'Only administrators and managers can reject reviews.');
         }
 
@@ -303,7 +303,7 @@ class ProductReviewController extends Controller
     public function manage(Request $request)
     {
         // Only admin/manager
-        if (!auth()->user()->hasRole('admin') && !auth()->user()->hasRole('manager')) {
+        if (!$this->isAdminOrManager()) {
             abort(403);
         }
 
@@ -340,5 +340,22 @@ class ProductReviewController extends Controller
             'stats' => $stats,
             'filters' => $request->only(['status', 'search']),
         ]);
+    }
+
+    /**
+     * Check if the current user is an admin or manager
+     */
+    private function isAdminOrManager()
+    {
+        $user = Auth::user();
+        return $user && ($user->role?->name === 'admin' || $user->role?->name === 'manager');
+    }
+
+    /**
+     * Get the current authenticated user
+     */
+    private function getCurrentUser()
+    {
+        return Auth::user();
     }
 }

@@ -8,6 +8,7 @@ use App\Models\Product;
 use App\Models\Transaction;
 use App\Models\TransactionItem;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
@@ -31,11 +32,11 @@ class POSController extends Controller
 
         $todayStats = [
             'transactions' => Transaction::whereDate('created_at', today())
-                ->where('cashier_id', auth()->id())
+                ->where('cashier_id', Auth::id())
                 ->where('status', 'completed')
                 ->count(),
             'revenue' => Transaction::whereDate('created_at', today())
-                ->where('cashier_id', auth()->id())
+                ->where('cashier_id', Auth::id())
                 ->where('status', 'completed')
                 ->sum('total'),
         ];
@@ -92,7 +93,7 @@ class POSController extends Controller
             $transaction = Transaction::create([
                 'transaction_number' => $transactionNumber,
                 'customer_id'        => $customerId,
-                'cashier_id'         => auth()->id(),
+                'cashier_id'         => Auth::id(),
                 'subtotal'           => $validated['subtotal'],
                 'tax'                => $validated['tax'],
                 'discount'           => $validated['discount'] ?? 0,

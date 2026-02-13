@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Apps;
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
 class CustomerController extends Controller
@@ -15,6 +16,7 @@ class CustomerController extends Controller
 
         if ($request->filled('search')) {
             $search = $request->search;
+
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
                   ->orWhere('email', 'like', "%{$search}%")
@@ -26,11 +28,17 @@ class CustomerController extends Controller
             $query->where('status', $request->status);
         }
 
-        $sortField = $request->get('sort', 'created_at');
-        $sortOrder = $request->get('order', 'desc');
-        $query->orderBy($sortField, $sortOrder);
+        $allowedSort = ['name', 'email', 'status', 'created_at'];
+        $sortField = in_array($request->get('sort'), $allowedSort)
+            ? $request->get('sort')
+            : 'created_at';
 
-        $customers = $query->paginate(10)->withQueryString();
+        $sortOrder = $request->get('order') === 'asc' ? 'asc' : 'desc';
+
+        $customers = $query
+            ->orderBy($sortField, $sortOrder)
+            ->paginate(10)
+            ->withQueryString();
 
         return Inertia::render('Apps/Customers', [
             'customers' => $customers,
@@ -40,6 +48,20 @@ class CustomerController extends Controller
                 'active'   => Customer::where('status', 'active')->count(),
                 'inactive' => Customer::where('status', 'inactive')->count(),
             ],
+        ]);
+    }
+
+    public function create()
+    {
+        return Inertia::render('Apps/CustomerForm', [
+            'customer' => null,
+        ]);
+    }
+
+    public function edit(Customer $customer)
+    {
+        return Inertia::render('Apps/CustomerForm', [
+            'customer' => $customer,
         ]);
     }
 
@@ -79,12 +101,19 @@ class CustomerController extends Controller
 
     public function destroy(Customer $customer)
     {
-        if (! auth()->user()->hasRole('admin')) {
+        $user = Auth::user();
+
+        if (!$user || !$this->isAdmin($user)) {
             abort(403, 'Hanya admin yang bisa menghapus customer.');
         }
 
         $customer->delete();
 
         return back()->with('success', 'Customer berhasil dihapus.');
+    }
+
+    private function isAdmin($user)
+    {
+        return $user->role === 'admin' || ($user->role_id && $user->role()->where('name', 'admin')->exists());
     }
 }

@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Apps;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
 class ProductController extends Controller
@@ -99,7 +101,7 @@ class ProductController extends Controller
 
         if ($request->hasFile('image')) {
             if ($product->image) {
-                \Storage::disk('public')->delete($product->image);
+                Storage::disk('public')->delete($product->image);
             }
             $validated['image'] = $request->file('image')->store('products', 'public');
         }
@@ -111,12 +113,14 @@ class ProductController extends Controller
 
     public function destroy(Product $product)
     {
-        if (! auth()->user()->hasRole('admin')) {
+        /** @var User $user */
+        $user = Auth::user();
+        if (! $user || ! $user->isAdmin()) {
             abort(403, 'Hanya admin yang bisa menghapus produk.');
         }
 
         if ($product->image) {
-            \Storage::disk('public')->delete($product->image);
+            Storage::disk('public')->delete($product->image);
         }
 
         $product->delete();

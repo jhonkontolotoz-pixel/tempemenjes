@@ -5,7 +5,6 @@ use App\Http\Controllers\Apps\CustomerController;
 use App\Http\Controllers\Apps\POSController;
 use App\Http\Controllers\Apps\ProductController;
 use App\Http\Controllers\Apps\ReportController;
-use App\Http\Controllers\Dashboard\BloghomeController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -26,15 +25,13 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    // Dashboard variants
-    Route::get('/dashboard/blog', [BloghomeController::class, 'index'])->name('dashboard.blog');
-    Route::get('/dashboard/school', [BloghomeController::class, 'school'])->name('dashboard.school');
-
     // ================================
     // CUSTOMERS — Admin & Manager only
     // ================================
     Route::middleware('role:admin,manager')->group(function () {
         Route::get('/customers', [CustomerController::class, 'index'])->name('customers.index');
+        Route::get('/customers/create', [CustomerController::class, 'create'])->name('customers.create');
+        Route::get('/customers/{customer}/edit', [CustomerController::class, 'edit'])->name('customers.edit');
         Route::post('/customers', [CustomerController::class, 'store'])->name('customers.store');
         Route::patch('/customers/{customer}', [CustomerController::class, 'update'])->name('customers.update');
         Route::delete('/customers/{customer}', [CustomerController::class, 'destroy'])->name('customers.destroy');
